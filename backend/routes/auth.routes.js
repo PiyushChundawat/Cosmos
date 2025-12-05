@@ -4,7 +4,11 @@ const {
   studentLogin,
   facultyLogin,
   adminLogin,
+  signup
 } = require("../controllers/authController");
+
+// Signup route (common for all roles)
+router.post("/signup", signup);
 
 // Teen alag login endpoints
 router.post("/student/login", studentLogin);
