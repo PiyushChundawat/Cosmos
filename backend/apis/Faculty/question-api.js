@@ -1,18 +1,22 @@
-app.post("/questions", async (req, res) => {
+const express = require('express');
+const router = express.Router();
+const Question = require('../../models/Faculty/question');
+
+//api to create questions
+router.post("/question", async (req, res) => {
     try {
         const {facultyId, questionText, options, correctAnswer, tags} = req.body;
         
-        const newQuestion = new Question.create({
+        const newQuestion = await Question.create({
             facultyId, 
             questionText,
             options,
             correctAnswer,
             tags: {
-                subject,
-                topic
+                subject: tags.subject,
+                topic: tags.topic
             }
         });
-        await newQuestion.save();
         res.status(201).json({message: "Question submitted successfully"});
     }
     catch(error) {
@@ -20,8 +24,8 @@ app.post("/questions", async (req, res) => {
     }
 });
 
-// ============ READ - Get All Questions ============
-app.get("/questions", async (req, res) => {
+// api to get all questions
+router.get("/questions", async (req, res) => {
     try {
         const questions = await Question.find({ isActive: true })
             .sort({ createdAt: -1 })
@@ -42,8 +46,8 @@ app.get("/questions", async (req, res) => {
     }
 });
 
-// ============ READ - Get Question by ID ============
-app.get("/questions/:id", async (req, res) => {
+// api to get question by id
+router.get("/questions/:id", async (req, res) => {
     try {
         const question = await Question.findById(req.params.id);
         
@@ -76,7 +80,8 @@ app.get("/questions/:id", async (req, res) => {
     }
 });
 
-app.get("/questions/faculty/:facultyId", async (req, res) => {
+//api to get question by facultyId
+router.get("/questions/faculty/:facultyId", async (req, res) => {
     try {
         const questions = await Question.find({ 
             facultyId: req.params.facultyId,
@@ -98,37 +103,57 @@ app.get("/questions/faculty/:facultyId", async (req, res) => {
     }
 });
 
-
-// ============ READ - Get Questions by Subject AND Topic ============
-app.get("/questions/filter", async (req, res) => {
+//api to get question by subject
+router.get("/questions/subject/:subject", async (req, res) => {
     try {
-        const { subject, topic, difficulty } = req.query;
-        
-        // Build dynamic filter
-        const filter = { isActive: true };
-        if (subject) filter['tags.subject'] = subject;
-        if (topic) filter['tags.topic'] = topic;
-        if (difficulty) filter.difficulty = difficulty;
-        
-        const questions = await Question.find(filter).sort({ createdAt: -1 });
-        
+        const subject = req.params.subject;
+
+        const questions = await Question.find({
+            isActive: true,
+            "tags.subject": subject
+        }).sort({ createdAt: -1 });
+
         res.status(200).json({
             success: true,
             count: questions.length,
             data: questions
         });
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Error fetching questions",
+            message: "Error fetching questions by subject",
             error: error.message
         });
     }
 });
 
-// ============ DELETE - Permanent Delete ============
-app.delete("/questions/:id", async (req, res) => {
+//api to get question by topic
+router.get("/questions/topic/:topic", async (req, res) => {
+    try {
+        const topic = req.params.topic;
+
+        const questions = await Question.find({
+            isActive: true,
+            "tags.topic": topic
+        }).sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            count: questions.length,
+            data: questions
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error fetching questions by topic",
+            error: error.message
+        });
+    }
+});
+
+
+// api to delete a question
+router.delete("/questions/:id", async (req, res) => {
     try {
         const deletedQuestion = await Question.findByIdAndDelete(req.params.id);
         
@@ -153,3 +178,5 @@ app.delete("/questions/:id", async (req, res) => {
         });
     }
 });
+
+module.exports = router;

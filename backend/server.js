@@ -22,7 +22,22 @@ mongoose
 app.get('/', (req, res) => {
   res.json({ 
     message: 'API is running',
-    status: 'success' 
+    status: 'success',
+    endpoints: {
+      questions: '/questions',
+    }
+  });
+});
+
+// Import and use question routes
+const questionRoutes = require('./apis/Faculty/question-api');
+app.use('/questions', questionRoutes);
+
+// 404 handler for undefined routes
+app.use((req, res) => {
+  res.status(404).json({ 
+    success: false,
+    message: 'Route not found' 
   });
 });
 
@@ -37,5 +52,5 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
