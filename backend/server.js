@@ -2,6 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
+const studentRoutes = require("./routes/student.routes");
+const resumeRoutes = require("./routes/resume.routes");
+const roadmapRoutes = require("./routes/roadmap.routes");
+
 require("dotenv").config(); // .env from root
 
 const app = express();
@@ -26,6 +30,7 @@ const resumeRoutes = require("./routes/resume.routes");
 
 app.use("/api/student", studentRoutes);
 app.use("/api/resume", resumeRoutes);
+app.use("/api/roadmap", roadmapRoutes);
 
 // Test route
 app.get("/", (req, res) => {
