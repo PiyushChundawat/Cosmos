@@ -1,1 +1,30 @@
+{
+  "name": "cosmos",
+  "version": "1.0.0",
+  "description": "Internship Preparation SaaS Product\r A full-stack MERN application built for campuses to help students improve through adaptive tests, resume analysis, performance tracking, and personalized roadmaps. Includes student, faculty, and admin modules.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PiyushChundawat/Cosmos.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PiyushChundawat/Cosmos/issues"
+  },
+  "homepage": "https://github.com/PiyushChundawat/Cosmos#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mongoose": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
 
