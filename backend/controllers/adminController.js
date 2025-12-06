@@ -41,7 +41,7 @@ exports.getSubjectAnalytics = async (req, res) => {
 };
 
 
-// Compare different batches/years
+
 exports.getBatchPerformance = async (req, res) => {
   try {
     const stats = await TestAttempt.aggregate([
@@ -56,7 +56,7 @@ exports.getBatchPerformance = async (req, res) => {
       { $unwind: "$stu" },
       {
         $group: {
-          _id: "$stu.batchYear",      // e.g. 2026, 2027
+          _id: "$stu.batchYear",      
           avgScore: { $avg: "$score" },
           attempts: { $sum: 1 },
           students: { $addToSet: "$stu._id" },
@@ -81,8 +81,6 @@ exports.getBatchPerformance = async (req, res) => {
   }
 };
 
-
-// Simple formula combining avg score + test activity
 exports.getPlacementReadinessIndex = async (req, res) => {
   try {
     const overall = await TestAttempt.aggregate([
@@ -99,7 +97,6 @@ exports.getPlacementReadinessIndex = async (req, res) => {
     const attemptsPerStudent =
       totalStudents > 0 ? totalAttempts / totalStudents : 0;
 
-    // Convert attempts per student into 0–100 scale
     const normalizedAttemptsScore = Math.min(attemptsPerStudent * 10, 100);
 
     const readinessIndex =
@@ -120,10 +117,8 @@ exports.getPlacementReadinessIndex = async (req, res) => {
     console.error("getPlacementReadinessIndex error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
-};
+}
 
-
-// Track improvement over time (monthly averages)
 exports.getTrendAnalysis = async (req, res) => {
   try {
     const trend = await TestAttempt.aggregate([
@@ -157,7 +152,6 @@ exports.getTrendAnalysis = async (req, res) => {
 };
 
 
-// Export CSV for management
 exports.exportReports = async (req, res) => {
   try {
     const attempts = await TestAttempt.find({})

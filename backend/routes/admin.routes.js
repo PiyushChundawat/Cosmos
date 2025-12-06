@@ -4,8 +4,9 @@ const router = express.Router();
 const adminController = require("../controllers/adminController");
 
 const authmiddleware = require("../middleware/authmiddleware");;
-const adminOnly = [authmiddleware];
+const { allowRoles } = require("../middleware/roleMiddleware");
 
+const adminOnly = [authmiddleware, allowRoles("admin")];
 
 router.get(
   "/dashboard/subjects",

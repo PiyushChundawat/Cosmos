@@ -2,7 +2,6 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user.modal");
 const createToken = require("../services/createToken");
 
-// ---------- Student Login ----------
 exports.studentLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -32,7 +31,6 @@ exports.studentLogin = async (req, res) => {
   }
 };
 
-// ---------- Faculty Login ----------
 exports.facultyLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -61,7 +59,6 @@ exports.facultyLogin = async (req, res) => {
   }
 };
 
-// ---------- Admin Login ----------
 exports.adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -90,12 +87,10 @@ exports.adminLogin = async (req, res) => {
   }
 };
 
-/ ---------- STUDENT SIGNUP ----------/
 exports.studentSignup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // check if email already exists
     const existing = await User.findOne({ email, role: "student" });
     if (existing) {
       return res.status(400).json({ message: "Student already registered" });
@@ -126,8 +121,6 @@ exports.studentSignup = async (req, res) => {
   }
 };
 
-
-// ---------- FACULTY SIGNUP ----------
 exports.facultySignup = async (req, res) => {
   try {
     const { name, email, password, department } = req.body;
@@ -164,8 +157,6 @@ exports.facultySignup = async (req, res) => {
   }
 };
 
-
-// ---------- ADMIN SIGNUP ----------
 exports.adminSignup = async (req, res) => {
   try {
     const { name, email, password, college, phoneNumber } = req.body;
