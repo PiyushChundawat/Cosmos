@@ -90,35 +90,111 @@ exports.adminLogin = async (req, res) => {
   }
 };
 
-//Signup Controller
-exports.signup = async (req, res) => {
+/ ---------- STUDENT SIGNUP ----------/
+exports.studentSignup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
-    // check if user already exists
-    const existing = await User.findOne({ email });
+    // check if email already exists
+    const existing = await User.findOne({ email, role: "student" });
     if (existing) {
-      return res.status(400).json({ message: "Email already exists" });
+      return res.status(400).json({ message: "Student already registered" });
     }
 
-    // hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // create new user
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      role, // "student" | "faculty" | "admin"
+      role: "student",
     });
 
     res.status(201).json({
-      message: "Signup successful",
+      message: "Student signup successful",
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+      },
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// ---------- FACULTY SIGNUP ----------
+exports.facultySignup = async (req, res) => {
+  try {
+    const { name, email, password, department } = req.body;
+
+    const existing = await User.findOne({ email, role: "faculty" });
+    if (existing) {
+      return res.status(400).json({ message: "Faculty user already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: "faculty",
+      department,
+    });
+
+    res.status(201).json({
+      message: "Faculty signup successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        department: user.department,
+      },
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// ---------- ADMIN SIGNUP ----------
+exports.adminSignup = async (req, res) => {
+  try {
+    const { name, email, password, college, phoneNumber } = req.body;
+
+    const existing = await User.findOne({ email, role: "admin" });
+    if (existing) {
+      return res.status(400).json({ message: "Admin already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: "admin",
+      college,
+      phoneNumber,
+    });
+
+    res.status(201).json({
+      message: "Admin signup successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        college: user.college,
+        phoneNumber: user.phoneNumber,
       },
     });
 
