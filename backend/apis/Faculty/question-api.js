@@ -5,7 +5,7 @@ const Question = require('../../models/Faculty/question');
 //api to create questions
 router.post("/question", async (req, res) => {
     try {
-        const {facultyId, questionText, options, correctAnswer, tags} = req.body;
+        const {facultyId, questionText, options, correctAnswer, tags} =  req.body;
         
         const newQuestion = await Question.create({
             facultyId, 
@@ -29,7 +29,6 @@ router.get("/questions", async (req, res) => {
     try {
         const questions = await Question.find({ isActive: true })
             .sort({ createdAt: -1 })
-            .select('-__v');  // Exclude version key
         
         res.status(200).json({
             success: true,
