@@ -4,7 +4,10 @@ const cors = require("cors");
 const path = require("path");
 const studentRoutes = require("./routes/student.routes");
 const resumeRoutes = require("./routes/resume.routes");
-const roadmapRoutes = require("./routes/roadmap.routes");
+
+const testRoutes = require('./routes/test.routes');
+
+// ...
 
 require("dotenv").config(); // .env from root
 
@@ -30,7 +33,8 @@ const resumeRoutes = require("./routes/resume.routes");
 
 app.use("/api/student", studentRoutes);
 app.use("/api/resume", resumeRoutes);
-app.use("/api/roadmap", roadmapRoutes);
+
+app.use('/api/tests', testRoutes);
 
 // Test route
 app.get("/", (req, res) => {

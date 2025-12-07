@@ -1,7 +1,8 @@
 const Student = require("../models/student.model");
-const TestAttempt = require("../models/testAttempt.model");
+const TestAttempt = require("../models/Student/testAttempt");   // ⬅ path fix
 const ResumeAnalysis = require("../models/resumeAnalysis.model");
-const Roadmap = require("../models/roadmap.model");
+
+const Test = require("../models/Faculty/test");                  // ⬅ new import
 
 // POST /api/student  -> create dummy student (for now)
 exports.createStudent = async (req, res) => {
@@ -19,12 +20,25 @@ exports.getDashboard = async (req, res) => {
   try {
     const studentId = req.params.id;
 
+    // 1) Basic student data
     const student = await Student.findById(studentId).lean();
-    if (!student) return res.status(404).json({ message: "Student not found" });
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
 
-    const resume = await ResumeAnalysis.findOne({ studentId }).sort({ analyzedAt: -1 }).lean();
-    const attempts = await TestAttempt.find({ studentId }).sort({ attemptedAt: -1 }).lean();
-    const roadmap = await Roadmap.findOne({ studentId }).sort({ createdAt: -1 }).lean();
+    // 2) Latest resume analysis
+    const resume = await ResumeAnalysis.findOne({ studentId })
+      .sort({ analyzedAt: -1 })        // ya createdAt, jo bhi tumhare schema me hai
+      .lean();
+
+    // 3) Roadmap (latest)
+   
+
+    // 4) Test attempts (+ test title)
+    const attempts = await TestAttempt.find({ studentId })
+      .populate("testId", "testTitle") // so frontend can show test name
+      .sort({ createdAt: -1 })         // timestamps se sort
+      .lean();
 
     const totalTestsTaken = attempts.length;
     const avgScore =
@@ -32,11 +46,38 @@ exports.getDashboard = async (req, res) => {
         ? 0
         : attempts.reduce((sum, a) => sum + (a.score || 0), 0) / totalTestsTaken;
 
+    // optional: avg percentage se resumeScore (0–10)
+    const avgPercentage =
+      totalTestsTaken === 0
+        ? 0
+        : attempts.reduce((sum, a) => sum + (a.percentage || 0), 0) /
+          totalTestsTaken;
+
+    const resumeScore = Math.round((avgPercentage / 10) * 10) / 10;
+
+    // 5) Upcoming tests (for dashboard "Scheduled tests" section)
+    const now = new Date();
+    const upcomingTests = await Test.find({
+      "schedule.isScheduled": true,
+      "schedule.startTime": { $gte: now },
+      status: "scheduled",
+    })
+      .sort({ "schedule.startTime": 1 })
+      .lean();
+
+    // FINAL RESPONSE
     res.json({
       student,
       resume,
-      stats: { totalTestsTaken, avgScore },
-      roadmap
+      roadmap,
+      stats: {
+        totalTestsTaken,
+        avgScore,
+        avgPercentage,
+        resumeScore,
+      },
+      upcomingTests,
+      attempts,
     });
   } catch (err) {
     console.error(err);
