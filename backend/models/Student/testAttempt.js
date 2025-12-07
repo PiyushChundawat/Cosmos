@@ -13,6 +13,11 @@ const testAttemptSchema = new Schema(
       ref: 'Student',
       required: true,
     },
+    collegeId: {                
+      type: Schema.Types.ObjectId,
+      ref: 'College',
+      required: true,
+    },
     answers: [
       {
         questionId: {

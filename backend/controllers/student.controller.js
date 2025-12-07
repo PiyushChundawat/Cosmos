@@ -1,43 +1,32 @@
 const Student = require("../models/student.model");
-const TestAttempt = require("../models/Student/testAttempt");   // ⬅ path fix
+const TestAttempt = require("../models/Student/testAttempt");
 const ResumeAnalysis = require("../models/resumeAnalysis.model");
-
-const Test = require("../models/Faculty/test");                  // ⬅ new import
-
-// POST /api/student  -> create dummy student (for now)
-exports.createStudent = async (req, res) => {
-  try {
-    const student = await Student.create(req.body);
-    res.status(201).json(student);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error creating student" });
-  }
-};
+const Roadmap = require("../models/roadmap.model");
+const Test = require("../models/Faculty/test");
 
 // GET /api/student/dashboard/:id
 exports.getDashboard = async (req, res) => {
   try {
     const studentId = req.params.id;
 
-    // 1) Basic student data
     const student = await Student.findById(studentId).lean();
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
-    }
+    if (!student) return res.status(404).json({ message: "Student not found" });
 
-    // 2) Latest resume analysis
+    const collegeId = student.collegeId;   // 🔴 key
+
     const resume = await ResumeAnalysis.findOne({ studentId })
-      .sort({ analyzedAt: -1 })        // ya createdAt, jo bhi tumhare schema me hai
+      .sort({ analyzedAt: -1 })
       .lean();
 
-    // 3) Roadmap (latest)
-   
+    const roadmap = await Roadmap.findOne({ studentId })
+      .sort({ createdAt: -1 })
+      .lean();
 
-    // 4) Test attempts (+ test title)
-    const attempts = await TestAttempt.find({ studentId })
-      .populate("testId", "testTitle") // so frontend can show test name
-      .sort({ createdAt: -1 })         // timestamps se sort
+    // attempts are automatically isolated by studentId,
+    // but we also store collegeId in attempt model:
+    const attempts = await TestAttempt.find({ studentId, collegeId })
+      .populate("testId", "testTitle")
+      .sort({ createdAt: -1 })
       .lean();
 
     const totalTestsTaken = attempts.length;
@@ -46,7 +35,6 @@ exports.getDashboard = async (req, res) => {
         ? 0
         : attempts.reduce((sum, a) => sum + (a.score || 0), 0) / totalTestsTaken;
 
-    // optional: avg percentage se resumeScore (0–10)
     const avgPercentage =
       totalTestsTaken === 0
         ? 0
@@ -55,9 +43,10 @@ exports.getDashboard = async (req, res) => {
 
     const resumeScore = Math.round((avgPercentage / 10) * 10) / 10;
 
-    // 5) Upcoming tests (for dashboard "Scheduled tests" section)
+    // 🔴 Upcoming tests FROM SAME COLLEGE ONLY
     const now = new Date();
     const upcomingTests = await Test.find({
+      collegeId,
       "schedule.isScheduled": true,
       "schedule.startTime": { $gte: now },
       status: "scheduled",
@@ -65,17 +54,11 @@ exports.getDashboard = async (req, res) => {
       .sort({ "schedule.startTime": 1 })
       .lean();
 
-    // FINAL RESPONSE
     res.json({
       student,
       resume,
       roadmap,
-      stats: {
-        totalTestsTaken,
-        avgScore,
-        avgPercentage,
-        resumeScore,
-      },
+      stats: { totalTestsTaken, avgScore, avgPercentage, resumeScore },
       upcomingTests,
       attempts,
     });

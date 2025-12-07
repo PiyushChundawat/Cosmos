@@ -11,6 +11,11 @@ const studentSchema = new mongoose.Schema(
     year: Number,
     section: String,
     rollNumber: String,
+    collegeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "College",      // ya "User" / "Admin" jo bhi tum use kar rahi ho
+    required: true
+  },
 
     placementReadinessScore: { type: Number, default: 0 }
   },

@@ -7,6 +7,11 @@ const questionSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             required: true
         },
+        collegeId: {                          
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "College",
+      required: true,
+    },
         questionText: {
             type:String,
             required: true

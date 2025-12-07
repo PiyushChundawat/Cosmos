@@ -8,6 +8,11 @@ const testSchema = new Schema(
       ref: 'Faculty',
       required: true,
     },
+     collegeId: {          // 🔴 NEW
+      type: Schema.Types.ObjectId,
+      ref: 'College',     // ya 'User' / 'Admin'
+      required: true,
+    },
     testTitle: {
       type: String,
       required: true,

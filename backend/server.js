@@ -1,49 +1,107 @@
+// backend/server.js
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-const studentRoutes = require("./routes/student.routes");
-const resumeRoutes = require("./routes/resume.routes");
-
-const testRoutes = require('./routes/test.routes');
-
-// ...
-
-require("dotenv").config(); // .env from root
+require("dotenv").config();
 
 const app = express();
 
-// middlewares
+// -------- MIDDLEWARES --------
 app.use(express.json());
-app.use(cors());
-
-// DB CONNECTION
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("DB error:", err));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 // static folder for uploaded files (so frontend can access /uploads/..)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ROUTES
-const studentRoutes = require("./routes/student.routes");
+// -------- ROUTES IMPORTS --------
+
+// AUTH / SUPERADMIN / ADMIN (auth-superadmin branch)
+const authRoutes = require("./routes/auth.routes");
+const superAdminRoutes = require("./routes/superAdminRoutes");
+let adminRoutes;
+try {
+  adminRoutes = require("./routes/admin.routes");
+} catch (e) {
+  console.log("admin.routes.js not found, skipping admin routes");
+}
+
+// core auth-side faculty/student/question/test
+const coreFacultyRoutes = require("./routes/faculty.routes");
+const coreStudentRoutes = require("./routes/student.routes");
+const coreQuestionRoutes = require("./routes/question.routes");
+const coreTestRoutes = require("./routes/test.routes");
+
+// RESUME (siddhi branch)
 const resumeRoutes = require("./routes/resume.routes");
-// (baad me: const testRoutes = require("./routes/test.routes"); etc.)
 
-app.use("/api/student", studentRoutes);
-app.use("/api/resume", resumeRoutes);
+// TPO ANALYTICS (siddhi branch)
+const tpoFacultyAnalyticsRoutes = require("./routes/TPO/facultyAnalytics.routes");
+const tpoStudentAnalyticsRoutes = require("./routes/TPO/studentAnalytics.routes");
 
-app.use('/api/tests', testRoutes);
+// FACULTY PANEL (siddhi branch)
+const facultyDashboardRoutes = require("./routes/Faculty/facultyDashboard.routes");
+const facultyQuestionRoutes = require("./routes/Faculty/question.routes");
+const facultyTestAnalyticsRoutes = require("./routes/Faculty/testAnalytics.routes");
+const facultyTestRoutes = require("./routes/Faculty/testRoutes");
 
-// Test route
+// STUDENT PANEL (siddhi branch)
+const studentTestRoutes = require("./routes/Student/testRoutes");
+
+// -------- BASE TEST ROUTE --------
 app.get("/", (req, res) => {
-  res.send("Backend running...");
+  res.send("Cosmos backend running 🚀");
 });
 
-// START SERVER
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// -------- USE ROUTES --------
 
-// (optional, agar kabhi tests likhne ho)
+// auth + roles
+app.use("/api/auth", authRoutes);
+app.use("/api/superadmin", superAdminRoutes);
+if (adminRoutes) {
+  app.use("/api/admin", adminRoutes);
+}
+
+// core entities (auth-side)
+app.use("/api/faculty", coreFacultyRoutes);     // auth/profile level faculty routes
+app.use("/api/student", coreStudentRoutes);     // auth/profile level student routes
+app.use("/api/questions", coreQuestionRoutes);  // core question mgmt
+app.use("/api/tests", coreTestRoutes);          // core test mgmt
+
+// resume / uploads
+app.use("/api/resume", resumeRoutes);
+
+// TPO analytics
+app.use("/api/tpo/faculty-analytics", tpoFacultyAnalyticsRoutes);
+app.use("/api/tpo/student-analytics", tpoStudentAnalyticsRoutes);
+
+// faculty panel
+app.use("/api/faculty/dashboard", facultyDashboardRoutes);
+app.use("/api/faculty/questions", facultyQuestionRoutes);
+app.use("/api/faculty/test-analytics", facultyTestAnalyticsRoutes);
+app.use("/api/faculty/tests", facultyTestRoutes);
+
+// student panel
+app.use("/api/student/tests", studentTestRoutes);
+
+// -------- START SERVER AFTER DB CONNECT --------
+const PORT = process.env.PORT || 5000;
+
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("MongoDB connected");
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => console.error("DB error:", err));
+
+// optional (for testing)
 module.exports = app;
