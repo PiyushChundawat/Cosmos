@@ -1,3 +1,4 @@
+
 const ResumeAnalysis = require("../models/resumeAnalysis.model");
 const Student = require("../models/student.model");
 const { analyzeResumeFromFile } = require("../utils/analyzeResume");
@@ -16,7 +17,7 @@ const uploadResume = async (req, res) => {
 
     const fileUrl = `/uploads/resumes/${req.file.filename}`;
 
-    // 🔥 LLM-based analysis via HuggingFace
+    // LLM-based analysis via HuggingFace
     const { score, skills, strengths, improvements, summary } =
       await analyzeResumeFromFile(req.file.path);
 

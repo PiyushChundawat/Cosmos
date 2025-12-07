@@ -1,6 +1,6 @@
-const pdfParse = require("pdf-parse");
+const pdfParse = require("pdf-parse");  // v1.1.1
 const fs = require("fs");
-const { callHFModel } = require("./hfClient");
+// const { callHFModel } = require("./hfClient"); // not needed for now
 
 // 1) PDF file -> plain text
 async function extractTextFromPdf(filePath) {
@@ -9,61 +9,108 @@ async function extractTextFromPdf(filePath) {
   return data.text || "";
 }
 
-// 2) Prompt for resume analysis
-function buildPrompt(text) {
-  return `
-You are an expert resume reviewer for Indian Computer Science / IT students applying for internships and placements.
+// ------------ Simple rule-based analysis using real resume text ------------
 
-Given the following resume text, analyse it and output a JSON object with EXACTLY these keys:
+// mapping of “skills” to search keywords
+const SKILL_KEYWORDS = [
+  { label: "JavaScript", keywords: ["javascript", "js "] },
+  { label: "TypeScript", keywords: ["typescript", "ts "] },
+  { label: "React", keywords: ["react", "next.js", "nextjs"] },
+  { label: "Node.js", keywords: ["node.js", "nodejs", "node js"] },
+  { label: "Express", keywords: ["express.js", "expressjs", "express js"] },
+  { label: "MongoDB", keywords: ["mongodb", "mongo db"] },
+  { label: "SQL", keywords: ["mysql", "postgres", "sql "] },
+  { label: "HTML/CSS", keywords: ["html", "css"] },
+  { label: "Python", keywords: ["python"] },
+  { label: "Java", keywords: [" java "] },
+  { label: "C++", keywords: ["c++", "cpp"] },
+];
 
-- score: number from 0 to 100 (overall resume quality)
-- skills: array of up to 10 key technical skills (strings)
-- strengths: array of bullet-point strengths (strings)
-- improvements: array of bullet-point suggestions (strings)
-- summary: short 2–3 line summary in simple English
+function ruleBasedAnalysis(text) {
+  const lower = text.toLowerCase();
 
-Important:
-- Respond with ONLY valid JSON.
-- Do NOT include any explanation or extra text outside JSON.
-- If information is missing, still give useful generic suggestions.
+  // ---- skills detection ----
+  const skills = [];
+  for (const entry of SKILL_KEYWORDS) {
+    if (entry.keywords.some((k) => lower.includes(k))) {
+      skills.push(entry.label);
+    }
+  }
+  const uniqueSkills = [...new Set(skills)].slice(0, 10);
 
-RESUME TEXT:
-${text.slice(0, 6000)}
-`;
-}
+  // ---- scoring ----
+  let score = 40;
 
-// 3) Ask HuggingFace LLM
-async function analyzeWithLLM(text) {
-  const prompt = buildPrompt(text);
-  const raw = await callHFModel(prompt);
+  // more skills -> higher score
+  score += Math.min(uniqueSkills.length * 5, 30); // +0..30
 
-  // try to find JSON in response
-  let jsonString = raw.trim();
+  // length of resume
+  const len = text.length;
+  if (len > 5000) score += 10;        // quite detailed
+  else if (len > 2500) score += 5;
+  else if (len < 800) score -= 10;    // too short
 
-  // Sometimes model may prepend text, try basic cleanup:
-  const firstBrace = jsonString.indexOf("{");
-  const lastBrace = jsonString.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace !== -1) {
-    jsonString = jsonString.slice(firstBrace, lastBrace + 1);
+  // projects / internships presence
+  if (lower.includes("project")) score += 5;
+  if (lower.includes("internship") || lower.includes("intern")) score += 5;
+  if (lower.includes("hackathon") || lower.includes("competition")) score += 3;
+
+  score = Math.max(0, Math.min(100, score)); // clamp 0–100
+
+  // ---- strengths ----
+  const strengths = [];
+  if (uniqueSkills.length >= 4) {
+    strengths.push("Good spread of technical skills relevant to software roles.");
+  }
+  if (lower.includes("project")) {
+    strengths.push("Has hands-on project experience; shows practical application of skills.");
+  }
+  if (lower.includes("internship") || lower.includes("intern")) {
+    strengths.push("Includes internship or industry exposure, which adds credibility.");
+  }
+  if (lower.includes("cgpa") || lower.includes("gpa") || lower.includes("percentage")) {
+    strengths.push("Academic performance is clearly mentioned.");
+  }
+  if (!strengths.length) {
+    strengths.push("Basic structure is present; can be improved with clearer highlights.");
   }
 
-  try {
-    return JSON.parse(jsonString);
-  } catch (err) {
-    console.error("JSON parse error from HF:", err, "\nRaw:", raw);
-    // fallback simple structure
-    return {
-      score: 50,
-      skills: [],
-      strengths: ["Model response was not fully structured. Please try refining the prompt."],
-      improvements: ["Improve resume formatting and content clarity."],
-      summary:
-        "Automatic analysis failed to parse perfectly, but the system suggests reviewing skills, projects and achievements carefully.",
-    };
+  // ---- improvements ----
+  const improvements = [];
+  if (!lower.includes("summary") && !lower.includes("objective")) {
+    improvements.push("Add a short 2–3 line profile summary at the top.");
   }
+  if (!lower.includes("cgpa") && !lower.includes("gpa") && !lower.includes("percentage")) {
+    improvements.push("Mention your CGPA / percentage clearly under Education.");
+  }
+  if (!lower.includes("github") && !lower.includes("git hub")) {
+    improvements.push("Add your GitHub or portfolio link to showcase projects.");
+  }
+  if (!lower.includes("skills")) {
+    improvements.push("Create a dedicated Skills section with tools, languages and frameworks.");
+  }
+  if (!lower.includes("internship") && !lower.includes("experience")) {
+    improvements.push("If possible, include internships or relevant experience (even part-time / freelance).");
+  }
+  if (!improvements.length) {
+    improvements.push("Polish formatting and add more measurable, quantified achievements.");
+  }
+
+  // ---- summary ----
+  const summary = `This resume shows ${
+    uniqueSkills.length ? "a decent mix of technical skills" : "basic information"
+  } and has scope to improve by adding clearer achievements, structure and more project or internship details.`;
+
+  return {
+    score,
+    skills: uniqueSkills,
+    strengths,
+    improvements,
+    summary,
+  };
 }
 
-// 4) MAIN: file path -> structured analysis
+// 3) MAIN: file path -> structured analysis
 async function analyzeResumeFromFile(filePath) {
   const text = await extractTextFromPdf(filePath);
 
@@ -77,11 +124,12 @@ async function analyzeResumeFromFile(filePath) {
         "Add clear sections for Education, Skills, Projects, and Experience.",
       ],
       summary:
-        "The resume could not be fully analysed because the text is very limited.",
+        "The resume could not be fully analysed because the extracted text was very limited.",
     };
   }
 
-  return await analyzeWithLLM(text);
+  // For now: purely rule-based (no HF)
+  return ruleBasedAnalysis(text);
 }
 
 module.exports = { analyzeResumeFromFile };
