@@ -60,7 +60,7 @@ const FacultyDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-emerald-600 text-lg">Loading dashboard...</div>
+        <div className="text-gray-600 text-lg">Loading dashboard...</div>
       </div>
     );
   }
@@ -68,52 +68,31 @@ const FacultyDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-emerald-600 to-green-600 rounded-xl p-6 text-white shadow-lg">
-        <h1 className="text-3xl font-bold">Welcome, {facultyName}! 👋</h1>
-        <p className="mt-2 text-emerald-50">Manage your tests, questions, and track student performance</p>
+      <div className="bg-gray-50 rounded-xl p-6">
+        <h1 className="text-3xl font-bold text-gray-900">Welcome, {facultyName}</h1>
+        <p className="mt-2 text-gray-600">Manage your tests, questions, and track student performance</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-gradient-to-br from-emerald-50 to-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Total Tests</p>
-              <p className="text-4xl font-bold text-emerald-600 mt-2">{stats.countTotal}</p>
-            </div>
-            <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
+        <Card className="bg-gray-50">
+          <div>
+            <p className="text-gray-600 text-sm font-medium">Total Tests</p>
+            <p className="text-4xl font-bold text-gray-900 mt-2">{stats.countTotal}</p>
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Average Score</p>
-              <p className="text-4xl font-bold text-green-600 mt-2">{stats.averageTestScore}%</p>
-            </div>
-            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
+        <Card className="bg-gray-50">
+          <div>
+            <p className="text-gray-600 text-sm font-medium">Average Score</p>
+            <p className="text-4xl font-bold text-gray-900 mt-2">{stats.averageTestScore}%</p>
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-emerald-50 to-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Upcoming Tests</p>
-              <p className="text-4xl font-bold text-emerald-600 mt-2">{stats.upcomingTestCount}</p>
-            </div>
-            <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
+        <Card className="bg-gray-50">
+          <div>
+            <p className="text-gray-600 text-sm font-medium">Upcoming Tests</p>
+            <p className="text-4xl font-bold text-gray-900 mt-2">{stats.upcomingTestCount}</p>
           </div>
         </Card>
       </div>

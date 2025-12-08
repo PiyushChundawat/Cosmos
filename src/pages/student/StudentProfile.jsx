@@ -11,123 +11,122 @@ export default function StudentProfile() {
     cgpa: '8.5',
     phone: '+91 98765 43210',
     dateOfBirth: '15/01/2003',
-    address: 'Hostel Room 204, College Campus',
+    address: 'Hostel Room 204, College Campus'
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b-2 border-emerald-200">
+    <div className="min-h-screen bg-white">
+      <div className="border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">👤 My Profile</h1>
-          <p className="text-gray-600 mt-1">View and manage your personal information</p>
+          <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+          <p className="text-gray-600 mt-1">View and manage your information</p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Card */}
+      <div className="max-w-7xl mx-auto px-6 py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg p-6 text-center sticky top-6">
-              <div className="w-32 h-32 bg-gradient-to-r from-emerald-600 to-green-600 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-5xl font-bold">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-center sticky top-6">
+              <div className="w-28 h-28 bg-emerald-600 text-white rounded-full mx-auto mb-4 flex items-center justify-center text-3xl font-bold">
                 {student.name.charAt(0)}
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{student.name}</h2>
-              <p className="text-gray-600 mb-1">{student.department}</p>
-              <p className="text-sm text-gray-500 mb-4">{student.registrationNo}</p>
-              
-              <div className="space-y-3 mt-6">
-                <div className="p-3 bg-emerald-50 rounded-lg">
+
+              <h2 className="text-2xl font-bold text-gray-900">{student.name}</h2>
+              <p className="text-gray-600">{student.department}</p>
+              <p className="text-sm text-gray-500 mt-1">{student.registrationNo}</p>
+
+              <div className="mt-6 space-y-3">
+                <div className="p-3 bg-gray-100 rounded-lg">
                   <p className="text-xs text-gray-600">CGPA</p>
-                  <p className="text-2xl font-bold text-emerald-700">{student.cgpa}</p>
+                  <p className="text-xl font-bold text-emerald-700">{student.cgpa}</p>
                 </div>
-                <div className="p-3 bg-blue-50 rounded-lg">
+
+                <div className="p-3 bg-gray-100 rounded-lg">
                   <p className="text-xs text-gray-600">Semester</p>
-                  <p className="text-lg font-bold text-blue-700">{student.semester}</p>
+                  <p className="text-lg font-semibold text-gray-900">{student.semester}</p>
                 </div>
               </div>
 
-              <button className="w-full mt-6 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold py-3 rounded-lg hover:from-emerald-700 hover:to-green-700 transition-all">
+              <button className="w-full mt-6 bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700">
                 Edit Profile
               </button>
             </div>
           </div>
 
-          {/* Details */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Personal Information */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Personal Information</h2>
+          <div className="lg:col-span-2 space-y-8">
+
+            <div className="bg-white border border-gray-200 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Personal Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Full Name</label>
+                  <p className="text-sm text-gray-600 mb-1">Full Name</p>
                   <p className="text-lg text-gray-900">{student.name}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Email</label>
+                  <p className="text-sm text-gray-600 mb-1">Email</p>
                   <p className="text-lg text-gray-900">{student.email}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Phone</label>
+                  <p className="text-sm text-gray-600 mb-1">Phone</p>
                   <p className="text-lg text-gray-900">{student.phone}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Date of Birth</label>
+                  <p className="text-sm text-gray-600 mb-1">Date of Birth</p>
                   <p className="text-lg text-gray-900">{student.dateOfBirth}</p>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Address</label>
+                  <p className="text-sm text-gray-600 mb-1">Address</p>
                   <p className="text-lg text-gray-900">{student.address}</p>
                 </div>
               </div>
             </div>
 
-            {/* Academic Information */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Academic Information</h2>
+            <div className="bg-white border border-gray-200 rounded-xl p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Academic Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Registration Number</label>
+                  <p className="text-sm text-gray-600 mb-1">Registration Number</p>
                   <p className="text-lg text-gray-900">{student.registrationNo}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Student Code</label>
+                  <p className="text-sm text-gray-600 mb-1">Student Code</p>
                   <p className="text-lg text-gray-900">{student.studentCode}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Department</label>
+                  <p className="text-sm text-gray-600 mb-1">Department</p>
                   <p className="text-lg text-gray-900">{student.department}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Current Semester</label>
+                  <p className="text-sm text-gray-600 mb-1">Current Semester</p>
                   <p className="text-lg text-gray-900">{student.semester}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">CGPA</label>
-                  <p className="text-lg text-emerald-700 font-bold">{student.cgpa}/10.0</p>
+                  <p className="text-sm text-gray-600 mb-1">CGPA</p>
+                  <p className="text-lg font-bold text-emerald-700">{student.cgpa}/10.0</p>
                 </div>
               </div>
             </div>
 
-            {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
-                <div className="text-4xl mb-2">✅</div>
-                <p className="text-sm opacity-90">Tests Completed</p>
-                <p className="text-3xl font-bold">12</p>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-center">
+                <p className="text-sm text-gray-600">Tests Completed</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">12</p>
               </div>
-              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
-                <div className="text-4xl mb-2">📊</div>
-                <p className="text-sm opacity-90">Average Score</p>
-                <p className="text-3xl font-bold">78%</p>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-center">
+                <p className="text-sm text-gray-600">Average Score</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">78%</p>
               </div>
-              <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg p-6 text-white">
-                <div className="text-4xl mb-2">🏆</div>
-                <p className="text-sm opacity-90">Rank</p>
-                <p className="text-3xl font-bold">#15</p>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-center">
+                <p className="text-sm text-gray-600">Rank</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">15</p>
               </div>
             </div>
+
           </div>
+
         </div>
       </div>
     </div>

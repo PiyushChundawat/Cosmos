@@ -11,15 +11,14 @@ export default function TPODashboard() {
   const userName = localStorage.getItem('tpo_user') || 'User';
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Mock Student Analytics Data
   const studentPerformanceData = {
     labels: ['Below 40%', '40-70%', 'Above 70%'],
     datasets: [
       {
         label: 'Student Count',
         data: [45, 120, 85],
-        backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
-        borderColor: ['#dc2626', '#d97706', '#059669'],
+        backgroundColor: ['#b91c1c', '#ca8a04', '#0C6B2F'],
+        borderColor: ['#7f1d1d', '#a16207', '#06451f'],
         borderWidth: 2,
       },
     ],
@@ -33,15 +32,14 @@ export default function TPODashboard() {
     { rank: 5, name: 'Rohan Kumar', score: 85, percentage: 85, attempts: 3, subject: 'English' },
   ];
 
-  // Mock Faculty Analytics Data
   const facultyPerformanceData = {
     labels: ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English'],
     datasets: [
       {
         label: 'Avg Student Score',
         data: [85, 78, 82, 88, 75],
-        backgroundColor: 'rgba(16, 185, 129, 0.6)',
-        borderColor: '#10b981',
+        backgroundColor: '#0C6B2F',
+        borderColor: '#06451f',
         borderWidth: 2,
       },
     ],
@@ -63,211 +61,130 @@ export default function TPODashboard() {
   };
 
   const chartOptions = {
-    plugins: {
-      legend: {
-        display: true,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        max: 150,
-      },
-    },
+    plugins: { legend: { display: true } },
+    scales: { y: { beginAtZero: true, max: 150 } },
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
 
       <div className="flex-1">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b-4 border-emerald-600 sticky top-0 z-40">
+
+        <header className="bg-white shadow-sm border-b-4 border-[#0C6B2F] sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                <span className="text-emerald-600">TPO</span> Dashboard
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900">TPO Dashboard</h1>
               <p className="text-gray-600 text-sm mt-1">{collegeName} • Welcome, {userName}</p>
             </div>
-            <Button variant="danger" onClick={handleLogout}>
-              Logout
-            </Button>
+            <Button variant="danger" onClick={handleLogout}>Logout</Button>
           </div>
         </header>
 
-        {/* Main Content */}
         <main className="max-w-7xl mx-auto px-6 py-8">
-          {/* Tab Navigation */}
-          <div className="flex gap-4 mb-8 border-b border-gray-200">
+
+          <div className="flex gap-4 mb-8 border-b border-gray-300">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`px-6 py-3 font-semibold transition-all ${
+              className={`px-6 py-3 font-semibold ${
                 activeTab === 'overview'
-                  ? 'border-b-4 border-emerald-600 text-emerald-700'
+                  ? 'border-b-4 border-[#0C6B2F] text-[#0C6B2F]'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              📊 Overview
+              Overview
             </button>
+
             <button
               onClick={() => setActiveTab('student')}
-              className={`px-6 py-3 font-semibold transition-all ${
+              className={`px-6 py-3 font-semibold ${
                 activeTab === 'student'
-                  ? 'border-b-4 border-emerald-600 text-emerald-700'
+                  ? 'border-b-4 border-[#0C6B2F] text-[#0C6B2F]'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              👨‍🎓 Student Analytics
+              Student Analytics
             </button>
+
             <button
               onClick={() => setActiveTab('faculty')}
-              className={`px-6 py-3 font-semibold transition-all ${
+              className={`px-6 py-3 font-semibold ${
                 activeTab === 'faculty'
-                  ? 'border-b-4 border-emerald-600 text-emerald-700'
+                  ? 'border-b-4 border-[#0C6B2F] text-[#0C6B2F]'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              👨‍🏫 Faculty Analytics
+              Faculty Analytics
             </button>
           </div>
 
-          {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
             <>
-              {/* Welcome Section */}
-              <Card className="mb-8 bg-gradient-to-r from-emerald-50 to-blue-50 border-2 border-emerald-200">
+              <Card className="mb-8 bg-white border border-gray-200">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to TPO Portal</h2>
-                <p className="text-gray-600">
-                  Manage placements, track student and faculty performance, and access detailed analytics
-                </p>
+                <p className="text-gray-700">Manage placements and track performance insights.</p>
               </Card>
 
-              {/* Quick Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <Card>
-                  <div className="text-center">
-                    <p className="text-gray-600 text-sm font-medium">Total Students</p>
-                    <p className="text-4xl font-bold text-emerald-700 mt-2">250</p>
-                    <p className="text-gray-500 text-xs mt-2">Across all programs</p>
-                  </div>
-                </Card>
-                <Card>
-                  <div className="text-center">
-                    <p className="text-gray-600 text-sm font-medium">Faculty Members</p>
-                    <p className="text-4xl font-bold text-emerald-700 mt-2">15</p>
-                    <p className="text-gray-500 text-xs mt-2">Active instructors</p>
-                  </div>
-                </Card>
-                <Card>
-                  <div className="text-center">
-                    <p className="text-gray-600 text-sm font-medium">Avg Score</p>
-                    <p className="text-4xl font-bold text-emerald-700 mt-2">78.5</p>
-                    <p className="text-gray-500 text-xs mt-2">Overall average</p>
-                  </div>
-                </Card>
-                <Card>
-                  <div className="text-center">
-                    <p className="text-gray-600 text-sm font-medium">Pass Rate</p>
-                    <p className="text-4xl font-bold text-emerald-700 mt-2">92%</p>
-                    <p className="text-gray-500 text-xs mt-2">Success rate</p>
-                  </div>
-                </Card>
+                <Card><div className="text-center"><p className="text-gray-600 text-sm">Total Students</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">250</p></div></Card>
+                <Card><div className="text-center"><p className="text-gray-600 text-sm">Faculty Members</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">15</p></div></Card>
+                <Card><div className="text-center"><p className="text-gray-600 text-sm">Avg Score</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">78.5</p></div></Card>
+                <Card><div className="text-center"><p className="text-gray-600 text-sm">Pass Rate</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">92%</p></div></Card>
               </div>
 
-              {/* Quick Access Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Card 
-                  title="📊 Student Analytics" 
-                  icon="📊"
-                  className="cursor-pointer hover:shadow-xl transition-all"
-                >
-                  <p className="text-gray-600 mb-4">View performance distribution, top performers, and student insights</p>
-                  <Button 
-                    size="sm"
-                    onClick={() => setActiveTab('student')}
-                    className="w-full"
-                  >
-                    View Details
-                  </Button>
+                <Card className="cursor-pointer" onClick={() => setActiveTab('student')}>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Student Analytics</h3>
+                  <p className="text-gray-700 mb-4">View performance distribution and insights.</p>
+                  <Button size="sm" className="w-full">View Details</Button>
                 </Card>
 
-                <Card 
-                  title="📈 Faculty Analytics" 
-                  icon="📈"
-                  className="cursor-pointer hover:shadow-xl transition-all"
-                >
-                  <p className="text-gray-600 mb-4">Subject-wise performance, faculty insights, and detailed breakdowns</p>
-                  <Button 
-                    size="sm"
-                    onClick={() => setActiveTab('faculty')}
-                    className="w-full"
-                  >
-                    View Details
-                  </Button>
+                <Card className="cursor-pointer" onClick={() => setActiveTab('faculty')}>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Faculty Analytics</h3>
+                  <p className="text-gray-700 mb-4">View subject-wise faculty performance.</p>
+                  <Button size="sm" className="w-full">View Details</Button>
                 </Card>
               </div>
             </>
           )}
 
-          {/* STUDENT ANALYTICS TAB */}
           {activeTab === 'student' && (
             <>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">👨‍🎓 Student Analytics</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Student Analytics</h2>
 
-              {/* Charts Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <Card title="📊 Performance Distribution">
-                  <Chart
-                    type="bar"
-                    data={studentPerformanceData}
-                    options={chartOptions}
-                    title="Students by Performance Band"
-                  />
+                <Card>
+                  <Chart type="bar" data={studentPerformanceData} options={chartOptions} />
                 </Card>
 
-                <Card title="📈 Performance Pie Chart">
-                  <Chart
-                    type="pie"
-                    data={studentPerformanceData}
-                    title="Performance Distribution %"
-                  />
+                <Card>
+                  <Chart type="pie" data={studentPerformanceData} />
                 </Card>
               </div>
 
-              {/* Top Performers Table */}
-              <Card title="🏆 Top 5 Performers">
+              <Card>
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full text-left">
                     <thead>
-                      <tr className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white">
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Rank</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Name</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Subject</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Score</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Percentage</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Attempts</th>
+                      <tr className="bg-[#0C6B2F] text-white">
+                        <th className="px-6 py-3 text-sm">Rank</th>
+                        <th className="px-6 py-3 text-sm">Name</th>
+                        <th className="px-6 py-3 text-sm">Subject</th>
+                        <th className="px-6 py-3 text-sm">Score</th>
+                        <th className="px-6 py-3 text-sm">Percentage</th>
+                        <th className="px-6 py-3 text-sm">Attempts</th>
                       </tr>
                     </thead>
+
                     <tbody className="divide-y divide-gray-200">
-                      {topStudents.map((student) => (
-                        <tr key={student.rank} className="hover:bg-emerald-50 transition-colors group">
-                          <td className="px-6 py-4">
-                            <span className="inline-block w-8 h-8 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-full text-center text-sm font-bold leading-8">
-                              {student.rank}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 font-semibold text-gray-900 group-hover:text-emerald-700">
-                            {student.name}
-                          </td>
-                          <td className="px-6 py-4 text-gray-700">{student.subject}</td>
-                          <td className="px-6 py-4 font-semibold text-gray-900">{student.score}</td>
-                          <td className="px-6 py-4">
-                            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-semibold">
-                              {student.percentage}%
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-gray-700">{student.attempts}</td>
+                      {topStudents.map((s) => (
+                        <tr key={s.rank} className="hover:bg-gray-100">
+                          <td className="px-6 py-4 font-semibold">{s.rank}</td>
+                          <td className="px-6 py-4">{s.name}</td>
+                          <td className="px-6 py-4">{s.subject}</td>
+                          <td className="px-6 py-4">{s.score}</td>
+                          <td className="px-6 py-4">{s.percentage}%</td>
+                          <td className="px-6 py-4">{s.attempts}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -277,51 +194,23 @@ export default function TPODashboard() {
             </>
           )}
 
-          {/* FACULTY ANALYTICS TAB */}
           {activeTab === 'faculty' && (
             <>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">👨‍🏫 Faculty Analytics</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Faculty Analytics</h2>
 
-              {/* Faculty Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <Card>
-                  <div className="text-center">
-                    <p className="text-gray-600 text-sm font-medium">Total Faculty</p>
-                    <p className="text-4xl font-bold text-emerald-700 mt-2">15</p>
-                  </div>
-                </Card>
-                <Card>
-                  <div className="text-center">
-                    <p className="text-gray-600 text-sm font-medium">Avg Faculty Score</p>
-                    <p className="text-4xl font-bold text-emerald-700 mt-2">81.6</p>
-                  </div>
-                </Card>
-                <Card>
-                  <div className="text-center">
-                    <p className="text-gray-600 text-sm font-medium">Total Students</p>
-                    <p className="text-4xl font-bold text-emerald-700 mt-2">215</p>
-                  </div>
-                </Card>
-                <Card>
-                  <div className="text-center">
-                    <p className="text-gray-600 text-sm font-medium">Total Attempts</p>
-                    <p className="text-4xl font-bold text-emerald-700 mt-2">860</p>
-                  </div>
-                </Card>
+                <Card><div className="text-center"><p className="text-gray-600 text-sm">Total Faculty</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">15</p></div></Card>
+                <Card><div className="text-center"><p className="text-gray-600 text-sm">Avg Faculty Score</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">81.6</p></div></Card>
+                <Card><div className="text-center"><p className="text-gray-600 text-sm">Total Students</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">215</p></div></Card>
+                <Card><div className="text-center"><p className="text-gray-600 text-sm">Total Attempts</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">860</p></div></Card>
               </div>
 
-              {/* Subject Performance Chart */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <Card title="📊 Subject-wise Performance">
-                  <Chart
-                    type="bar"
-                    data={facultyPerformanceData}
-                    options={chartOptions}
-                    title="Average Score by Subject"
-                  />
+                <Card>
+                  <Chart type="bar" data={facultyPerformanceData} options={chartOptions} />
                 </Card>
 
-                <Card title="📈 Subject Distribution">
+                <Card>
                   <Chart
                     type="doughnut"
                     data={{
@@ -329,50 +218,36 @@ export default function TPODashboard() {
                       datasets: [
                         {
                           data: [45, 42, 40, 38, 50],
-                          backgroundColor: [
-                            '#10b981',
-                            '#3b82f6',
-                            '#f59e0b',
-                            '#ef4444',
-                            '#8b5cf6',
-                          ],
-                          borderColor: '#fff',
-                          borderWidth: 2,
+                          backgroundColor: ['#0C6B2F', '#4b5563', '#6b7280', '#9ca3af', '#374151'],
+                          borderWidth: 0,
                         },
                       ],
                     }}
-                    title="Students per Subject"
                   />
                 </Card>
               </div>
 
-              {/* Faculty Details Table */}
-              <Card title="👨‍🏫 Faculty Performance Breakdown">
+              <Card>
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full text-left">
                     <thead>
-                      <tr className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white">
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Faculty Name</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Subject</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Avg Score</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Students</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Total Attempts</th>
+                      <tr className="bg-[#0C6B2F] text-white">
+                        <th className="px-6 py-3 text-sm">Faculty Name</th>
+                        <th className="px-6 py-3 text-sm">Subject</th>
+                        <th className="px-6 py-3 text-sm">Avg Score</th>
+                        <th className="px-6 py-3 text-sm">Students</th>
+                        <th className="px-6 py-3 text-sm">Attempts</th>
                       </tr>
                     </thead>
+
                     <tbody className="divide-y divide-gray-200">
-                      {facultyStats.map((faculty, idx) => (
-                        <tr key={idx} className="hover:bg-emerald-50 transition-colors group">
-                          <td className="px-6 py-4 font-semibold text-gray-900 group-hover:text-emerald-700">
-                            {faculty.name}
-                          </td>
-                          <td className="px-6 py-4 text-gray-700">{faculty.subject}</td>
-                          <td className="px-6 py-4">
-                            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-semibold">
-                              {faculty.avgScore}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-gray-700 font-semibold">{faculty.students}</td>
-                          <td className="px-6 py-4 text-gray-700 font-semibold">{faculty.attempts}</td>
+                      {facultyStats.map((f, i) => (
+                        <tr key={i} className="hover:bg-gray-100">
+                          <td className="px-6 py-4 font-semibold">{f.name}</td>
+                          <td className="px-6 py-4">{f.subject}</td>
+                          <td className="px-6 py-4">{f.avgScore}</td>
+                          <td className="px-6 py-4">{f.students}</td>
+                          <td className="px-6 py-4">{f.attempts}</td>
                         </tr>
                       ))}
                     </tbody>

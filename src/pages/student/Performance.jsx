@@ -2,10 +2,10 @@ import React from 'react';
 
 export default function Performance() {
   const stats = [
-    { title: 'Average Percentage', value: '78.5%', icon: '📊', color: 'emerald' },
-    { title: 'Tests Attempted', value: '12', icon: '✅', color: 'blue' },
-    { title: 'Highest Score', value: '95%', icon: '🏆', color: 'yellow' },
-    { title: 'Tests Passed', value: '10', icon: '✔️', color: 'green' },
+    { title: 'Average Percentage', value: '78.5%' },
+    { title: 'Tests Attempted', value: '12' },
+    { title: 'Highest Score', value: '95%' },
+    { title: 'Tests Passed', value: '10' },
   ];
 
   const recentAttempts = [
@@ -16,11 +16,10 @@ export default function Performance() {
     { id: 5, testName: 'Logical Reasoning', date: '2025-11-25', score: 90, total: 100, percentage: 90, status: 'Passed' },
   ];
 
-  const getStatusColor = (status) => {
-    return status === 'Passed' 
-      ? 'bg-green-100 text-green-800' 
+  const getStatusColor = (status) =>
+    status === 'Passed'
+      ? 'bg-green-100 text-green-800'
       : 'bg-red-100 text-red-800';
-  };
 
   const getScoreColor = (percentage) => {
     if (percentage >= 80) return 'text-green-600';
@@ -28,103 +27,107 @@ export default function Performance() {
     return 'text-red-600';
   };
 
+  const trendScores = [65, 72, 68, 85, 78, 90, 85, 88, 95, 82, 76, 85];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b-2 border-emerald-200">
+    <div className="min-h-screen bg-white">
+      <div className="border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">📊 Performance Analytics</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Performance Analytics</h1>
           <p className="text-gray-600 mt-1">Track your test results and progress</p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-emerald-500 hover:shadow-xl transition-shadow"
+              className="bg-gray-50 border border-gray-200 rounded-xl p-6"
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm font-medium">{stat.title}</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
-                </div>
-                <div className="text-4xl">{stat.icon}</div>
-              </div>
+              <p className="text-gray-600 text-sm font-medium">{stat.title}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
             </div>
           ))}
         </div>
 
-        {/* Graph Placeholder */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Score Trend</h2>
-          <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-12 border-2 border-emerald-200">
-            <div className="text-center">
-              <div className="text-6xl mb-4">📈</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Performance Graph</h3>
-              <p className="text-gray-600">Your score progression over time</p>
-              <div className="mt-8 h-64 flex items-end justify-around gap-4">
-                {[65, 72, 68, 85, 78, 90, 85, 88, 95, 82, 76, 85].map((score, index) => (
-                  <div key={index} className="flex-1 flex flex-col items-center">
-                    <div className="text-xs font-semibold text-emerald-700 mb-1">{score}%</div>
-                    <div
-                      className="w-full bg-gradient-to-t from-emerald-600 to-green-500 rounded-t-lg transition-all hover:from-emerald-700 hover:to-green-600"
-                      style={{ height: `${(score / 100) * 240}px` }}
-                    />
-                    <div className="text-xs text-gray-500 mt-2">T{index + 1}</div>
-                  </div>
-                ))}
+          <div className="h-64 flex items-end justify-between gap-3">
+            {trendScores.map((score, index) => (
+              <div key={index} className="flex-1 flex flex-col items-center">
+                <div className="text-xs font-semibold text-gray-700 mb-1">
+                  {score}%
+                </div>
+                <div
+                  className="w-full bg-emerald-600 rounded-t-lg"
+                  style={{ height: `${(score / 100) * 220}px` }}
+                />
+                <div className="text-xs text-gray-500 mt-2">
+                  T{index + 1}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Recent Attempts Table */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6 border-b">
+        <div className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-900">Recent Test Attempts</h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gradient-to-r from-emerald-600 to-green-600 text-white">
-                  <th className="px-6 py-4 text-left text-sm font-semibold">#</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Test Name</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Date</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Score</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Percentage</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Action</th>
+                <tr className="bg-gray-100 text-gray-800">
+                  <th className="px-6 py-3 text-left font-semibold">#</th>
+                  <th className="px-6 py-3 text-left font-semibold">Test Name</th>
+                  <th className="px-6 py-3 text-left font-semibold">Date</th>
+                  <th className="px-6 py-3 text-left font-semibold">Score</th>
+                  <th className="px-6 py-3 text-left font-semibold">Percentage</th>
+                  <th className="px-6 py-3 text-left font-semibold">Status</th>
+                  <th className="px-6 py-3 text-left font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {recentAttempts.map((attempt, index) => (
-                  <tr key={attempt.id} className="hover:bg-emerald-50 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-gray-900">{index + 1}</td>
-                    <td className="px-6 py-4">
-                      <p className="font-semibold text-gray-900">{attempt.testName}</p>
+                  <tr key={attempt.id} className="hover:bg-gray-100">
+                    <td className="px-6 py-4 font-semibold text-gray-900">
+                      {index + 1}
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{attempt.date}</td>
+                    <td className="px-6 py-4">
+                      <p className="font-semibold text-gray-900">
+                        {attempt.testName}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {attempt.date}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="font-semibold text-gray-900">
                         {attempt.score}/{attempt.total}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`text-2xl font-bold ${getScoreColor(attempt.percentage)}`}>
+                      <span
+                        className={`font-semibold text-lg ${getScoreColor(
+                          attempt.percentage
+                        )}`}
+                      >
                         {attempt.percentage}%
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(attempt.status)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                          attempt.status
+                        )}`}
+                      >
                         {attempt.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button className="text-emerald-600 hover:text-emerald-700 font-semibold text-sm">
-                        View Details →
+                      <button className="text-emerald-600 hover:text-emerald-700 font-semibold">
+                        View Details
                       </button>
                     </td>
                   </tr>
@@ -134,41 +137,22 @@ export default function Performance() {
           </div>
         </div>
 
-        {/* Performance Insights */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg p-8 text-white">
-            <h3 className="text-2xl font-bold mb-4">🎯 Strong Areas</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-3">
-                <span className="text-2xl">✓</span>
-                <span className="text-lg">Logical Reasoning (90% avg)</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="text-2xl">✓</span>
-                <span className="text-lg">Aptitude Tests (85% avg)</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="text-2xl">✓</span>
-                <span className="text-lg">Problem Solving (82% avg)</span>
-              </li>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Strong Areas</h3>
+            <ul className="space-y-3 text-gray-700">
+              <li>Logical Reasoning: 90% average</li>
+              <li>Aptitude Tests: 85% average</li>
+              <li>Problem Solving: 82% average</li>
             </ul>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-lg p-8 text-white">
-            <h3 className="text-2xl font-bold mb-4">📚 Areas to Improve</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-3">
-                <span className="text-2xl">!</span>
-                <span className="text-lg">Coding Challenges (65% avg)</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="text-2xl">!</span>
-                <span className="text-lg">Technical Assessment (72% avg)</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="text-2xl">!</span>
-                <span className="text-lg">Communication (76% avg)</span>
-              </li>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Areas to Improve</h3>
+            <ul className="space-y-3 text-gray-700">
+              <li>Coding Challenges: 65% average</li>
+              <li>Technical Assessment: 72% average</li>
+              <li>Communication: 76% average</li>
             </ul>
           </div>
         </div>

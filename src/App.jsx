@@ -5,12 +5,16 @@ import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/DashBoard.jsx';
 
-// TPO Routes
+// TPO
 import TPOLogin from './pages/tpo/TPOLogin.jsx';
 import TPOSignup from './pages/tpo/TPOSignup.jsx';
 import TPODashboard from './pages/tpo/TPODashboard.jsx';
 
-// Student Routes
+// These are NOT inside the tpo folder
+import StudentAnalytics from './pages/StudentAnalytics.jsx';
+import FacultyAnalytics from './pages/FacultyAnalytics.jsx';
+
+// Student
 import StudentSignup from './pages/student/StudentSignup.jsx';
 import StudentLogin from './pages/student/StudentLogin.jsx';
 import StudentLayout from './components/student/StudentLayout.jsx';
@@ -23,7 +27,7 @@ import ResumeUpload from './pages/student/ResumeUpload.jsx';
 import ResumeAnalysis from './pages/student/ResumeAnalysis.jsx';
 import StudentProfile from './pages/student/StudentProfile.jsx';
 
-// Faculty Routes
+// Faculty
 import FacultySignup from './pages/faculty/FacultySignup.jsx';
 import FacultyLogin from './pages/faculty/FacultyLogin.jsx';
 import FacultyLayout from './layouts/FacultyLayout.jsx';
@@ -33,25 +37,25 @@ import ManageTests from './pages/faculty/ManageTests.jsx';
 import TestAnalytics from './pages/faculty/TestAnalytics.jsx';
 
 function App() {
-
-  console.log("App loaded");  // ✅ This is correct
-
   return (
     <Router>
       <Routes>
 
         <Route path="/" element={<Landing />} />
-
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
 
+        {/* TPO */}
         <Route path="/tpo/login" element={<TPOLogin />} />
         <Route path="/tpo/signup" element={<TPOSignup />} />
         <Route path="/tpo/dashboard" element={<TPODashboard />} />
+        <Route path="/tpo/student-analytics" element={<StudentAnalytics />} />
+        <Route path="/tpo/faculty-analytics" element={<FacultyAnalytics />} />
 
-        {/* Student Routes */}
+        {/* Student */}
         <Route path="/student/signup" element={<StudentSignup />} />
         <Route path="/student/login" element={<StudentLogin />} />
+
         <Route path="/student" element={<StudentLayout />}>
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="tests" element={<UpcomingTests />} />
@@ -63,9 +67,10 @@ function App() {
           <Route path="profile" element={<StudentProfile />} />
         </Route>
 
-        {/* Faculty Routes */}
+        {/* Faculty */}
         <Route path="/faculty/signup" element={<FacultySignup />} />
         <Route path="/faculty/login" element={<FacultyLogin />} />
+        
         <Route path="/faculty" element={<FacultyLayout />}>
           <Route path="dashboard" element={<FacultyDashboard />} />
           <Route path="questions" element={<ManageQuestions />} />
@@ -73,7 +78,7 @@ function App() {
           <Route path="tests/:id/analytics" element={<TestAnalytics />} />
           <Route path="analytics" element={<Navigate to="/faculty/tests" replace />} />
         </Route>
-        
+
         <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>
