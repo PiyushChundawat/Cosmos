@@ -1,7 +1,7 @@
 // routes/analytics/studentAnalytics.routes.js
 const express = require('express');
 const router = express.Router();
-const studentAnalyticsController = require('../../controllers/analytics/studentAnalytics.controller');
+const studentAnalyticsController = require('../../controllers/TPO/studentAnalytics.controller');
 
 // Segregate students by performance bands
 router.get("/performance-bands", studentAnalyticsController.getPerformanceBands);

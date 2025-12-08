@@ -1,6 +1,6 @@
 // controllers/analytics/testAnalytics.controller.js
-const TestAttempts = require('../../models/TestAttempts');
-const Test = require('../../models/Test');
+const TestAttempts = require('../../models/Student/testAttempt');
+const Test = require('../../models/Faculty/test');
 
 // Get test summary for a specific test
 exports.getTestSummary = async (req, res) => {

@@ -8,7 +8,7 @@ require("dotenv").config();
 
 const app = express();
 
-// -------- MIDDLEWARES --------
+// ------------- MIDDLEWARES -------------
 app.use(express.json());
 app.use(
   cors({
@@ -17,62 +17,69 @@ app.use(
   })
 );
 
-// static folder for uploaded files (so frontend can access /uploads/..)
+// static folder for uploaded files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// -------- ROUTES IMPORTS --------
+// ---------- ROUTES IMPORTS ----------
 
-// AUTH / SUPERADMIN / ADMIN (auth-superadmin branch)
+// AUTH / SUPERADMIN / ADMIN
 const authRoutes = require("./routes/auth.routes");
 const superAdminRoutes = require("./routes/superAdminRoutes");
+
 let adminRoutes;
 try {
   adminRoutes = require("./routes/admin.routes");
 } catch (e) {
-  console.log("admin.routes.js not found, skipping admin routes");
+  console.log("admin.routes.js not found, skipping /api/admin mount");
 }
 
-// core auth-side faculty/student/question/test
+// CORE AUTH-SIDE (faculty / student / questions / tests)
 const coreFacultyRoutes = require("./routes/faculty.routes");
 const coreStudentRoutes = require("./routes/student.routes");
 const coreQuestionRoutes = require("./routes/question.routes");
-const coreTestRoutes = require("./routes/test.routes");
+const coreTestRoutes = require("./routes/test.routes"); // aggregator (Faculty + Student)
 
-// RESUME (siddhi branch)
+// RESUME
 const resumeRoutes = require("./routes/resume.routes");
 
-// TPO ANALYTICS (siddhi branch)
+// TPO ANALYTICS
 const tpoFacultyAnalyticsRoutes = require("./routes/TPO/facultyAnalytics.routes");
 const tpoStudentAnalyticsRoutes = require("./routes/TPO/studentAnalytics.routes");
 
-// FACULTY PANEL (siddhi branch)
+// FACULTY PANEL
 const facultyDashboardRoutes = require("./routes/Faculty/facultyDashboard.routes");
 const facultyQuestionRoutes = require("./routes/Faculty/question.routes");
 const facultyTestAnalyticsRoutes = require("./routes/Faculty/testAnalytics.routes");
 const facultyTestRoutes = require("./routes/Faculty/testRoutes");
 
-// STUDENT PANEL (siddhi branch)
+// STUDENT PANEL
 const studentTestRoutes = require("./routes/Student/testRoutes");
 
-// -------- BASE TEST ROUTE --------
+// ------------- BASE TEST ROUTE -------------
 app.get("/", (req, res) => {
   res.send("Cosmos backend running 🚀");
 });
 
-// -------- USE ROUTES --------
+// ------------- USE ROUTES -------------
 
 // auth + roles
 app.use("/api/auth", authRoutes);
 app.use("/api/superadmin", superAdminRoutes);
-if (adminRoutes) {
+
+// /api/admin sirf tab mount karo jab sahi router ho
+if (typeof adminRoutes === "function") {
   app.use("/api/admin", adminRoutes);
+} else if (adminRoutes) {
+  console.warn(
+    "⚠️ /api/admin not mounted: admin.routes.js must export an Express router (module.exports = router)"
+  );
 }
 
 // core entities (auth-side)
-app.use("/api/faculty", coreFacultyRoutes);     // auth/profile level faculty routes
-app.use("/api/student", coreStudentRoutes);     // auth/profile level student routes
-app.use("/api/questions", coreQuestionRoutes);  // core question mgmt
-app.use("/api/tests", coreTestRoutes);          // core test mgmt
+app.use("/api/faculty", coreFacultyRoutes);      // auth/profile level faculty routes
+app.use("/api/student", coreStudentRoutes);      // auth/profile level student routes
+app.use("/api/questions", coreQuestionRoutes);   // core question mgmt
+app.use("/api/tests", coreTestRoutes);           // core test mgmt (Faculty + Student)
 
 // resume / uploads
 app.use("/api/resume", resumeRoutes);
@@ -90,11 +97,17 @@ app.use("/api/faculty/tests", facultyTestRoutes);
 // student panel
 app.use("/api/student/tests", studentTestRoutes);
 
-// -------- START SERVER AFTER DB CONNECT --------
+// ------------- START SERVER AFTER DB CONNECT -------------
 const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  console.error("❌ MONGO_URI is not defined in .env");
+  process.exit(1);
+}
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(MONGO_URI)
   .then(() => {
     console.log("MongoDB connected");
     app.listen(PORT, () => {

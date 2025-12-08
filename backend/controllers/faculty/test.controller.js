@@ -1,7 +1,7 @@
 // controllers/faculty/test.controller.js
 const mongoose = require('mongoose');
-const Test = require('../../models/Test');
-const Question = require('../../models/Question');
+const Test = require('../../models/Faculty/test');
+const Question = require('../../models/Faculty/question');
 
 // Create a new test
 exports.createTest = async (req, res) => {

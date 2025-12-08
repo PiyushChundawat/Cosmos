@@ -1,5 +1,5 @@
 // controllers/analytics/studentAnalytics.controller.js
-const TestAttempts = require('../../models/TestAttempts');
+const TestAttempts = require('../../models/Student/testAttempt');
 const mongoose = require('mongoose');
 
 // Segregate students by performance bands

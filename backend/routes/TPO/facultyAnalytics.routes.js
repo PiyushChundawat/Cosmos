@@ -1,7 +1,7 @@
 // routes/analytics/facultyAnalytics.routes.js
 const express = require('express');
 const router = express.Router();
-const facultyAnalyticsController = require('../../controllers/analytics/facultyAnalytics.controller');
+const facultyAnalyticsController = require('../../controllers/TPO/facultyAnalytics.controller');
 
 // Get performance bands by faculty/subject
 router.get("/performance-bands", facultyAnalyticsController.getPerformanceBands);

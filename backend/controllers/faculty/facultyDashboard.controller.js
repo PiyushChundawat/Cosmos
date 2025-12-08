@@ -1,6 +1,6 @@
 // controllers/faculty/facultyDashboard.controller.js
-const Test = require('../../models/Test');
-const TestAttempt = require('../../models/TestAttempts'); // Adjusted to match your model name
+const Test = require('../../models/Faculty/test');
+const TestAttempt = require('../../models/Student/testAttempt'); // Adjusted to match your model name
 
 // Get dashboard statistics
 exports.getDashboardStats = async (req, res) => {

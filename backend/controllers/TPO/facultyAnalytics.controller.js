@@ -1,5 +1,6 @@
 // controllers/analytics/facultyAnalytics.controller.js
-const TestAttempts = require('../../models/TestAttempts');
+const TestAttempt = require("../../models/Student/testAttempt");
+
 const mongoose = require('mongoose');
 
 // Get performance bands by faculty/subject
