@@ -4,24 +4,24 @@ const { Schema } = mongoose;
 const testAttemptSchema = new Schema(
   {
     testId: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Test',
       required: true,
     },
     studentId: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Student',
       required: true,
     },
     collegeId: {                
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'College',
       required: true,
     },
     answers: [
       {
         questionId: {
-          type: Schema.Types.ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
           ref: 'Question',
           required: true,
         },
