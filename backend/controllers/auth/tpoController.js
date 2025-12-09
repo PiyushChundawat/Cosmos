@@ -27,11 +27,11 @@ exports.tpoSignup = async (req, res) => {
     }
 
     const emailDomain = tpoEmail.split("@")[1];
-    if (emailDomain !== collegeEmailDomain) {
-      return res
-        .status(400)
-        .json({ message: "TPO email does not match college email domain" });
-    }
+    // if (emailDomain !== collegeEmailDomain) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "TPO email does not match college email domain" });
+    // }
 
     const studentCode = generateCode();
     const facultyCode = generateCode();

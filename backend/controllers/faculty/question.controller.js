@@ -9,6 +9,7 @@ exports.createQuestion = async (req, res) => {
         const newQuestion = await Question.create({
             facultyId, 
             questionText,
+            collegeId: "675a1234567890abcdef5678",
             options,
             correctAnswer,
             tags: {

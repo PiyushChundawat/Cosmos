@@ -63,6 +63,71 @@ exports.getTestSummary = async (req, res) => {
     }
 };
 
+// // Get question-wise statistics for a test
+// exports.getQuestionStats = async (req, res) => {
+//     try {
+//         const { testId } = req.params;
+//         const facultyId = req.user.id;
+
+//         // Verify test belongs to faculty
+//         const test = await Test.findOne({ _id: testId, facultyId });
+//         if (!test) {
+//             return res.status(404).json({ message: "Test not found or unauthorized" });
+//         }
+
+//         const attempts = await TestAttempts.find({ testId });
+
+//         if (attempts.length === 0) {
+//             return res.status(200).json({
+//                 message: "No attempts found for this test",
+//                 data: []
+//             });
+//         }
+
+//         // Aggregate question statistics
+//         const questionStats = {};
+
+//         attempts.forEach(attempt => {
+//             attempt.answers.forEach(answer => {
+//                 const qId = answer.questionId.toString();
+                
+//                 if (!questionStats[qId]) {
+//                     questionStats[qId] = {
+//                         questionId: qId,
+//                         totalAttempts: 0,
+//                         correctAttempts: 0,
+//                         incorrectAttempts: 0,
+//                         accuracyRate: 0
+//                     };
+//                 }
+
+//                 questionStats[qId].totalAttempts++;
+//                 if (answer.isCorrect) {
+//                     questionStats[qId].correctAttempts++;
+//                 } else {
+//                     questionStats[qId].incorrectAttempts++;
+//                 }
+//             });
+//         });
+
+//         // Calculate accuracy rates
+//         const questionStatsArray = Object.values(questionStats).map(stat => ({
+//             ...stat,
+//             accuracyRate: ((stat.correctAttempts / stat.totalAttempts) * 100).toFixed(2)
+//         }));
+
+//         // Sort by accuracy rate (lowest first to identify difficult questions)
+//         questionStatsArray.sort((a, b) => parseFloat(a.accuracyRate) - parseFloat(b.accuracyRate));
+
+//         res.status(200).json({
+//             message: "Question statistics fetched successfully",
+//             data: questionStatsArray
+//         });
+//     } catch (error) {
+//         res.status(500).json({ message: "Error fetching question statistics", error: error.message });
+//     }
+// };
+
 // Get question-wise statistics for a test
 exports.getQuestionStats = async (req, res) => {
     try {
@@ -70,7 +135,7 @@ exports.getQuestionStats = async (req, res) => {
         const facultyId = req.user.id;
 
         // Verify test belongs to faculty
-        const test = await Test.findOne({ _id: testId, facultyId });
+        const test = await Test.findOne({ _id: testId, facultyId }).populate('questionIds');
         if (!test) {
             return res.status(404).json({ message: "Test not found or unauthorized" });
         }
@@ -110,11 +175,23 @@ exports.getQuestionStats = async (req, res) => {
             });
         });
 
-        // Calculate accuracy rates
-        const questionStatsArray = Object.values(questionStats).map(stat => ({
-            ...stat,
-            accuracyRate: ((stat.correctAttempts / stat.totalAttempts) * 100).toFixed(2)
-        }));
+        // Calculate accuracy rates and add question details
+        const questionStatsArray = Object.values(questionStats).map(stat => {
+            const question = test.questionIds.find(q => q._id.toString() === stat.questionId);
+            const accuracyRate = ((stat.correctAttempts / stat.totalAttempts) * 100).toFixed(2);
+            
+            // Determine difficulty based on accuracy rate
+            let difficulty = 'Medium';
+            if (parseFloat(accuracyRate) >= 75) difficulty = 'Easy';
+            else if (parseFloat(accuracyRate) < 50) difficulty = 'Hard';
+            
+            return {
+                ...stat,
+                questionText: question?.questionText || 'Question not found',
+                difficulty: difficulty,
+                accuracyRate: accuracyRate
+            };
+        });
 
         // Sort by accuracy rate (lowest first to identify difficult questions)
         questionStatsArray.sort((a, b) => parseFloat(a.accuracyRate) - parseFloat(b.accuracyRate));

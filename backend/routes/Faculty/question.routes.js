@@ -4,24 +4,24 @@ const router = express.Router();
 const questionController = require('../../controllers/faculty/question.controller');
 
 // Create a new question
-router.post("/question", questionController.createQuestion);
+router.post("/", questionController.createQuestion);
 
 // Get all active questions
-router.get("/questions", questionController.getAllQuestions);
+router.get("/", questionController.getAllQuestions);
 
 // Get question by ID
-router.get("/questions/:id", questionController.getQuestionById);
+router.get("//:id", questionController.getQuestionById);
 
 // Get questions by faculty ID
-router.get("/questions/faculty/:facultyId", questionController.getQuestionsByFacultyId);
+router.get("/faculty/:facultyId", questionController.getQuestionsByFacultyId);
 
 // Get questions by subject
-router.get("/questions/subject/:subject", questionController.getQuestionsBySubject);
+router.get("/subject/:subject", questionController.getQuestionsBySubject);
 
 // Get questions by topic
-router.get("/questions/topic/:topic", questionController.getQuestionsByTopic);
+router.get("/topic/:topic", questionController.getQuestionsByTopic);
 
 // Delete a question
-router.delete("/questions/:id", questionController.deleteQuestion);
+router.delete("/:id", questionController.deleteQuestion);
 
 module.exports = router;

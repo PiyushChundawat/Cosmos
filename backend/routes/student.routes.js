@@ -16,9 +16,8 @@ router.get("/dashboard/:id", studentController.getDashboard);
 // ---------------------------------------------
 // STUDENT TEST SYSTEM ROUTES (IMPORTANT)
 // ---------------------------------------------
-
 // 1) UPCOMING TESTS LIST
-router.get("/:studentId/upcoming-tests", studentTestController.getUpcomingTests);
+router.get("/upcoming-tests/:studentId", studentTestController.getUpcomingTests);
 
 // 2) ONE TEST + QUESTIONS FOR ATTEMPT
 router.get("/test/:testId", studentTestController.getTestForAttempt);

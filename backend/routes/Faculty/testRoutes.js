@@ -5,7 +5,7 @@ const Question = require('../../models/Faculty/question');
 const TestAttempt = require('../../models/Student/testAttempt');
 
 // 🔹 Create a new test
-router.post('/faculty/tests', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const {
       facultyId,
@@ -25,6 +25,7 @@ router.post('/faculty/tests', async (req, res) => {
 
     const test = await Test.create({
       facultyId,
+      collegeId: "675a1234567890abcdef5678", 
       testTitle,
       questionIds,
       schedule,
@@ -48,7 +49,7 @@ router.post('/faculty/tests', async (req, res) => {
 });
 
 // 🔹 Get all tests by a faculty
-router.get('/faculty/:facultyId/tests', async (req, res) => {
+router.get('/:facultyId', async (req, res) => {
   try {
     const tests = await Test.find({ facultyId: req.params.facultyId })
       .sort({ createdAt: -1 })
@@ -69,7 +70,7 @@ router.get('/faculty/:facultyId/tests', async (req, res) => {
 });
 
 // 🔹 Get a test + its questions + attempts summary
-router.get('/faculty/tests/:testId', async (req, res) => {
+router.get('/tests/:testId', async (req, res) => {
   try {
     const test = await Test.findById(req.params.testId).lean();
     if (!test) {
@@ -105,7 +106,7 @@ router.get('/faculty/tests/:testId', async (req, res) => {
 });
 
 // 🔹 Faculty adds feedback to a student's attempt
-router.post('/faculty/tests/:testId/feedback/:studentId', async (req, res) => {
+router.post('/tests/:testId/feedback/:studentId', async (req, res) => {
   try {
     const { feedback } = req.body;
     const { testId, studentId } = req.params;
