@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import InputField from '../../components/faculty/InputField';
 import Button from '../../components/faculty/Button';
+import api from '../../api/axios';
 
 export default function FacultySignup() {
   const navigate = useNavigate();
@@ -21,32 +22,27 @@ export default function FacultySignup() {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const faculties = JSON.parse(localStorage.getItem('faculties') || '[]');
-
-      const existingFaculty = faculties.find(f => f.email === formData.email);
-      if (existingFaculty) {
-        setError('Email already registered. Please login.');
-        setLoading(false);
-        return;
-      }
-
-      faculties.push({
-        id: Date.now(),
-        ...formData,
-        createdAt: new Date().toISOString()
+      const response = await api.post('/auth/faculty/signup', {
+        name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        facultyCode: formData.facultyCode,
+        facultyId: formData.collegeFacultyId,
+        department: formData.department,
       });
 
-      localStorage.setItem('faculties', JSON.stringify(faculties));
-
+      // Show success and redirect to login
+      alert('Signup successful! Please login with your credentials.');
       navigate('/faculty/login');
-    } catch {
-      setError('Signup failed. Please try again.');
+    } catch (err) {
+      console.error('Signup error:', err);
+      setError(err.response?.data?.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -55,17 +51,15 @@ export default function FacultySignup() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Faculty Signup</h1>
           <p className="text-gray-600 mt-1">Create your faculty account</p>
         </div>
 
         <div className="bg-gray-50 rounded-xl p-8 border border-gray-200">
-
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
+              ⚠️ {error}
             </div>
           )}
 
@@ -77,6 +71,7 @@ export default function FacultySignup() {
               value={formData.fullName}
               onChange={handleChange}
               placeholder="Enter your full name"
+              disabled={loading}
               required
             />
 
@@ -87,6 +82,7 @@ export default function FacultySignup() {
               value={formData.email}
               onChange={handleChange}
               placeholder="faculty@college.edu"
+              disabled={loading}
               required
             />
 
@@ -97,6 +93,7 @@ export default function FacultySignup() {
               value={formData.password}
               onChange={handleChange}
               placeholder="Create a password"
+              disabled={loading}
               required
             />
 
@@ -107,6 +104,7 @@ export default function FacultySignup() {
               value={formData.facultyCode}
               onChange={handleChange}
               placeholder="FAC123XYZ"
+              disabled={loading}
               required
             />
 
@@ -117,6 +115,7 @@ export default function FacultySignup() {
               value={formData.collegeFacultyId}
               onChange={handleChange}
               placeholder="Institution ID"
+              disabled={loading}
               required
             />
 
@@ -127,6 +126,7 @@ export default function FacultySignup() {
               value={formData.department}
               onChange={handleChange}
               placeholder="Computer Science"
+              disabled={loading}
               required
             />
 
@@ -134,7 +134,7 @@ export default function FacultySignup() {
               type="submit"
               fullWidth
               disabled={loading}
-              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-medium"
+              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-medium disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Creating Account...' : 'Sign Up'}
             </Button>
@@ -148,7 +148,6 @@ export default function FacultySignup() {
               </Link>
             </p>
           </div>
-
         </div>
       </div>
     </div>

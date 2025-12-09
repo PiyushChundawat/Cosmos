@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import api from '../../api/axios';
 
 export default function StudentSignup() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -11,6 +14,7 @@ export default function StudentSignup() {
     department: '',
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,11 +25,11 @@ export default function StudentSignup() {
   const validate = () => {
     const newErrors = {};
     if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
-    if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) 
+    if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = 'Valid email is required';
-    if (!formData.password || formData.password.length < 6) 
+    if (!formData.password || formData.password.length < 6)
       newErrors.password = 'Password must be at least 6 characters';
-    if (formData.password !== formData.confirmPassword) 
+    if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = 'Passwords do not match';
     if (!formData.studentCode.trim()) newErrors.studentCode = 'Student code is required';
     if (!formData.registrationNo.trim()) newErrors.registrationNo = 'Registration number is required';
@@ -33,29 +37,52 @@ export default function StudentSignup() {
     return newErrors;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    alert('Signup successful');
+
+    setLoading(true);
+    try {
+      const response = await api.post('/auth/student/signup', {
+        name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        studentCode: formData.studentCode,
+        regNo: formData.registrationNo,
+        department: formData.department,
+      });
+
+      // Show success message or redirect to login
+      alert('Signup successful! Please login with your credentials.');
+      navigate('/student/login');
+    } catch (error) {
+      console.error('Signup error:', error);
+      setErrors({
+        submit: error.response?.data?.message || 'Signup failed. Please try again.'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputClass = (error) => `w-full px-4 py-3 border ${
     error ? 'border-red-500' : 'border-gray-300'
-  } focus:outline-none focus:border-emerald-600`;
+  } focus:outline-none focus:border-emerald-600 disabled:bg-gray-100 disabled:cursor-not-allowed`;
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
-        <div className="bg-white border border-gray-200 p-8">
+        <div className="bg-white border border-gray-200 p-8 rounded-xl">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">COSMOS</h1>
             <p className="text-gray-600">Student Portal - Sign Up</p>
           </div>
 
-          <div className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -67,6 +94,7 @@ export default function StudentSignup() {
                   value={formData.fullName}
                   onChange={handleChange}
                   placeholder="Enter your full name"
+                  disabled={loading}
                   className={inputClass(errors.fullName)}
                 />
                 {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
@@ -82,6 +110,7 @@ export default function StudentSignup() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="student@college.edu"
+                  disabled={loading}
                   className={inputClass(errors.email)}
                 />
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -97,6 +126,7 @@ export default function StudentSignup() {
                   value={formData.studentCode}
                   onChange={handleChange}
                   placeholder="STU12345"
+                  disabled={loading}
                   className={inputClass(errors.studentCode)}
                 />
                 {errors.studentCode && <p className="text-red-500 text-sm mt-1">{errors.studentCode}</p>}
@@ -112,6 +142,7 @@ export default function StudentSignup() {
                   value={formData.registrationNo}
                   onChange={handleChange}
                   placeholder="REG2025001"
+                  disabled={loading}
                   className={inputClass(errors.registrationNo)}
                 />
                 {errors.registrationNo && <p className="text-red-500 text-sm mt-1">{errors.registrationNo}</p>}
@@ -125,6 +156,7 @@ export default function StudentSignup() {
                   name="department"
                   value={formData.department}
                   onChange={handleChange}
+                  disabled={loading}
                   className={inputClass(errors.department)}
                 >
                   <option value="">Select Department</option>
@@ -147,6 +179,7 @@ export default function StudentSignup() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
+                  disabled={loading}
                   className={inputClass(errors.password)}
                 />
                 {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
@@ -162,28 +195,36 @@ export default function StudentSignup() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="••••••••"
+                  disabled={loading}
                   className={inputClass(errors.confirmPassword)}
                 />
                 {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
               </div>
             </div>
 
+            {errors.submit && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-600 text-sm font-semibold">⚠️ {errors.submit}</p>
+              </div>
+            )}
+
             <button
-              onClick={handleSubmit}
-              className="w-full bg-emerald-600 text-white font-medium py-3 hover:bg-emerald-700 transition-colors"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-emerald-600 text-white font-medium py-3 hover:bg-emerald-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Sign Up
+              {loading ? 'Signing up...' : 'Sign Up'}
             </button>
 
             <div className="text-center pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-600">
                 Already have an account?{' '}
-                <a href="#" className="text-emerald-600 font-medium hover:text-emerald-700">
+                <Link to="/student/login" className="text-emerald-600 font-medium hover:text-emerald-700">
                   Login
-                </a>
+                </Link>
               </p>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>

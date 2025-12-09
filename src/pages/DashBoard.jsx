@@ -1,13 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import StatCard from '../components/StatCard';
 import CollegeTable from '../components/CollegeTable';
+import api from '../api/axios';
 
 function Dashboard() {
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [colleges, setColleges] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchColleges();
+  }, []);
+
+  const fetchColleges = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/superadmin/colleges');
+      setColleges(response.data.colleges);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch colleges:', err);
+      setError(err.response?.data?.message || 'Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 
@@ -22,8 +45,6 @@ function Dashboard() {
             </h1>
             <p className="text-gray-600 text-sm mt-1">Welcome to the admin panel</p>
           </div>
-
-          {/* Logout Button */}
           <div className="relative">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
@@ -47,38 +68,31 @@ function Dashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Stats Section */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Overview</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="Total Colleges Enrolled"
-              value="17"
-              icon="🏫"
-            />
-            <StatCard
-              title="Active Plans"
-              value="2"
-              icon="✅"
-            />
-            <StatCard
-              title="Trial Plans"
-              value="1"
-              icon="📋"
-            />
-            <StatCard
-              title="Total Revenue"
-              value="₹500000"
-              icon="💰"
-            />
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600 text-lg">Loading dashboard...</p>
           </div>
-        </div>
-
-        {/* Table Section */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Enrolled Colleges</h2>
-          <CollegeTable />
-        </div>
+        ) : error ? (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+            <p className="text-red-600 font-semibold text-lg">⚠️ {error}</p>
+            <button
+              onClick={fetchColleges}
+              className="mt-4 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Enrolled Colleges ({colleges.length})
+              </h2>
+            </div>
+            <CollegeTable colleges={colleges} />
+          </div>
+        )}
       </main>
 
       {/* Footer */}

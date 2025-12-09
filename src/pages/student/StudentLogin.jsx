@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import api from '../../api/axios';
 
 export default function StudentLogin() {
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     studentCode: '',
   });
-
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,21 +29,45 @@ export default function StudentLogin() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    localStorage.setItem('studentToken', 'mock-student-token-' + Date.now());
-    localStorage.setItem('studentName', formData.email.split('@')[0]);
-    localStorage.setItem('studentId', 'student-' + Date.now());
-    navigate("/student/dashboard");
+
+    setLoading(true);
+    try {
+      const response = await api.post('/auth/student/login', {
+        email: formData.email,
+        password: formData.password,
+        studentCode: formData.studentCode,
+      });
+
+      // Store token and user info
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('studentId', response.data.user.id);
+      localStorage.setItem('studentName', response.data.user.name);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem('studentToken', response.data.token);
+      localStorage.setItem('studentName', response.data.user.name);
+      localStorage.setItem('studentId', response.data.user.id);
+      localStorage.setItem('studentCollege', response.data.user.college);
+
+      navigate('/student/dashboard');
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors({
+        submit: error.response?.data?.message || 'Login failed. Please try again.'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputClass = (error) =>
-    `w-full px-4 py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-emerald-600`;
+    `w-full px-4 py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-emerald-600 disabled:bg-gray-100 disabled:cursor-not-allowed`;
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
@@ -53,7 +77,7 @@ export default function StudentLogin() {
           <p className="text-gray-600 mt-2">Access your student portal</p>
         </div>
 
-        <div className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
             <input
@@ -62,6 +86,7 @@ export default function StudentLogin() {
               value={formData.email}
               onChange={handleChange}
               placeholder="student@college.edu"
+              disabled={loading}
               className={inputClass(errors.email)}
             />
             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -75,6 +100,7 @@ export default function StudentLogin() {
               value={formData.password}
               onChange={handleChange}
               placeholder="Enter your password"
+              disabled={loading}
               className={inputClass(errors.password)}
             />
             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
@@ -88,27 +114,35 @@ export default function StudentLogin() {
               value={formData.studentCode}
               onChange={handleChange}
               placeholder="STU12345"
+              disabled={loading}
               className={inputClass(errors.studentCode)}
             />
             {errors.studentCode && <p className="text-red-500 text-sm mt-1">{errors.studentCode}</p>}
           </div>
 
+          {errors.submit && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-600 text-sm font-semibold">⚠️ {errors.submit}</p>
+            </div>
+          )}
+
           <button
-            onClick={handleSubmit}
-            className="w-full bg-emerald-600 text-white font-medium py-3 rounded-lg hover:bg-emerald-700 transition-colors mt-6"
+            type="submit"
+            disabled={loading}
+            className="w-full bg-emerald-600 text-white font-medium py-3 rounded-lg hover:bg-emerald-700 transition-colors mt-6 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
 
           <div className="text-center pt-4">
             <p className="text-gray-600">
               Don't have an account?{' '}
-              <a href="/student/signup" className="text-emerald-600 font-medium hover:text-emerald-700">
+              <Link to="/student/signup" className="text-emerald-600 font-medium hover:text-emerald-700">
                 Sign up
-              </a>
+              </Link>
             </p>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

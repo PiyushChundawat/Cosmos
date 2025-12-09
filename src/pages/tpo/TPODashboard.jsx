@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import Chart from '../../components/Chart';
+import api from '../../api/axios';
 
 export default function TPODashboard() {
   const navigate = useNavigate();
@@ -11,47 +12,81 @@ export default function TPODashboard() {
   const userName = localStorage.getItem('tpo_user') || 'User';
   const [activeTab, setActiveTab] = useState('overview');
 
+  // State for student analytics
+  const [studentPerformance, setStudentPerformance] = useState({ below_40: [], between_40_70: [], above_70: [] });
+  const [topStudents, setTopStudents] = useState([]);
+  const [studentLoading, setStudentLoading] = useState(false);
+  const [studentError, setStudentError] = useState(null);
+
+  // State for faculty analytics
+  const [facultyAnalytics, setFacultyAnalytics] = useState(null);
+  const [facultyLoading, setFacultyLoading] = useState(false);
+  const [facultyError, setFacultyError] = useState(null);
+
+  // Fetch student analytics
+  const fetchStudentAnalytics = async () => {
+    try {
+      setStudentLoading(true);
+      setStudentError(null);
+
+      // Fetch performance bands
+      const performanceRes = await api.get('/analytics/student/performance-bands');
+      setStudentPerformance(performanceRes.data.data);
+
+      // Fetch top performers
+      const topPerformersRes = await api.get('/analytics/student/top-performers');
+      setTopStudents(topPerformersRes.data.data);
+    } catch (err) {
+      console.error('Failed to fetch student analytics:', err);
+      setStudentError(err.response?.data?.message || 'Failed to load student analytics');
+    } finally {
+      setStudentLoading(false);
+    }
+  };
+
+  // Fetch faculty analytics
+  const fetchFacultyAnalytics = async () => {
+    try {
+      setFacultyLoading(true);
+      setFacultyError(null);
+
+      // You can modify this to fetch for a specific subject or all subjects
+      const response = await api.get('/analytics/faculty/complete?subject=Mathematics');
+      setFacultyAnalytics(response.data.data);
+    } catch (err) {
+      console.error('Failed to fetch faculty analytics:', err);
+      setFacultyError(err.response?.data?.message || 'Failed to load faculty analytics');
+    } finally {
+      setFacultyLoading(false);
+    }
+  };
+
+  // Load data based on active tab
+  useEffect(() => {
+    if (activeTab === 'student') {
+      fetchStudentAnalytics();
+    } else if (activeTab === 'faculty') {
+      fetchFacultyAnalytics();
+    }
+  }, [activeTab]);
+
+  // Prepare chart data for student performance
   const studentPerformanceData = {
     labels: ['Below 40%', '40-70%', 'Above 70%'],
     datasets: [
       {
         label: 'Student Count',
-        data: [45, 120, 85],
+        data: [
+          studentPerformance.below_40?.length || 0,
+          studentPerformance.between_40_70?.length || 0,
+          studentPerformance.above_70?.length || 0,
+        ],
         backgroundColor: ['#b91c1c', '#ca8a04', '#0C6B2F'],
         borderColor: ['#7f1d1d', '#a16207', '#06451f'],
         borderWidth: 2,
       },
     ],
   };
-
-  const topStudents = [
-    { rank: 1, name: 'Aarav Sharma', score: 95, percentage: 95, attempts: 5, subject: 'Mathematics' },
-    { rank: 2, name: 'Priya Singh', score: 92, percentage: 92, attempts: 4, subject: 'Physics' },
-    { rank: 3, name: 'Arjun Patel', score: 89, percentage: 89, attempts: 3, subject: 'Chemistry' },
-    { rank: 4, name: 'Diya Verma', score: 87, percentage: 87, attempts: 4, subject: 'Biology' },
-    { rank: 5, name: 'Rohan Kumar', score: 85, percentage: 85, attempts: 3, subject: 'English' },
-  ];
-
-  const facultyPerformanceData = {
-    labels: ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English'],
-    datasets: [
-      {
-        label: 'Avg Student Score',
-        data: [85, 78, 82, 88, 75],
-        backgroundColor: '#0C6B2F',
-        borderColor: '#06451f',
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  const facultyStats = [
-    { name: 'Dr. Rajesh Kumar', subject: 'Mathematics', avgScore: 85, students: 45, attempts: 180 },
-    { name: 'Prof. Anjali Singh', subject: 'Physics', avgScore: 78, students: 42, attempts: 168 },
-    { name: 'Dr. Vikram Patel', subject: 'Chemistry', avgScore: 82, students: 40, attempts: 160 },
-    { name: 'Prof. Meera Sharma', subject: 'Biology', avgScore: 88, students: 38, attempts: 152 },
-    { name: 'Dr. Arjun Mishra', subject: 'English', avgScore: 75, students: 50, attempts: 200 },
-  ];
 
   const handleLogout = () => {
     localStorage.removeItem('tpo_token');
@@ -62,7 +97,7 @@ export default function TPODashboard() {
 
   const chartOptions = {
     plugins: { legend: { display: true } },
-    scales: { y: { beginAtZero: true, max: 150 } },
+    scales: { y: { beginAtZero: true } },
   };
 
   return (
@@ -70,7 +105,6 @@ export default function TPODashboard() {
       <Sidebar />
 
       <div className="flex-1">
-
         <header className="bg-white shadow-sm border-b-4 border-[#0C6B2F] sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div>
@@ -82,7 +116,7 @@ export default function TPODashboard() {
         </header>
 
         <main className="max-w-7xl mx-auto px-6 py-8">
-
+          {/* Tab Navigation */}
           <div className="flex gap-4 mb-8 border-b border-gray-300">
             <button
               onClick={() => setActiveTab('overview')}
@@ -118,19 +152,13 @@ export default function TPODashboard() {
             </button>
           </div>
 
+          {/* Overview Tab */}
           {activeTab === 'overview' && (
             <>
               <Card className="mb-8 bg-white border border-gray-200">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to TPO Portal</h2>
                 <p className="text-gray-700">Manage placements and track performance insights.</p>
               </Card>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <Card><div className="text-center"><p className="text-gray-600 text-sm">Total Students</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">250</p></div></Card>
-                <Card><div className="text-center"><p className="text-gray-600 text-sm">Faculty Members</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">15</p></div></Card>
-                <Card><div className="text-center"><p className="text-gray-600 text-sm">Avg Score</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">78.5</p></div></Card>
-                <Card><div className="text-center"><p className="text-gray-600 text-sm">Pass Rate</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">92%</p></div></Card>
-              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Card className="cursor-pointer" onClick={() => setActiveTab('student')}>
@@ -148,112 +176,164 @@ export default function TPODashboard() {
             </>
           )}
 
+          {/* Student Analytics Tab */}
           {activeTab === 'student' && (
             <>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Student Analytics</h2>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <Card>
-                  <Chart type="bar" data={studentPerformanceData} options={chartOptions} />
-                </Card>
-
-                <Card>
-                  <Chart type="pie" data={studentPerformanceData} />
-                </Card>
-              </div>
-
-              <Card>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="bg-[#0C6B2F] text-white">
-                        <th className="px-6 py-3 text-sm">Rank</th>
-                        <th className="px-6 py-3 text-sm">Name</th>
-                        <th className="px-6 py-3 text-sm">Subject</th>
-                        <th className="px-6 py-3 text-sm">Score</th>
-                        <th className="px-6 py-3 text-sm">Percentage</th>
-                        <th className="px-6 py-3 text-sm">Attempts</th>
-                      </tr>
-                    </thead>
-
-                    <tbody className="divide-y divide-gray-200">
-                      {topStudents.map((s) => (
-                        <tr key={s.rank} className="hover:bg-gray-100">
-                          <td className="px-6 py-4 font-semibold">{s.rank}</td>
-                          <td className="px-6 py-4">{s.name}</td>
-                          <td className="px-6 py-4">{s.subject}</td>
-                          <td className="px-6 py-4">{s.score}</td>
-                          <td className="px-6 py-4">{s.percentage}%</td>
-                          <td className="px-6 py-4">{s.attempts}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {studentLoading ? (
+                <div className="text-center py-16">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#0C6B2F] mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading student analytics...</p>
                 </div>
-              </Card>
+              ) : studentError ? (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+                  <p className="text-red-600 font-semibold">⚠️ {studentError}</p>
+                  <button
+                    onClick={fetchStudentAnalytics}
+                    className="mt-4 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <Card>
+                      <Chart type="bar" data={studentPerformanceData} options={chartOptions} />
+                    </Card>
+
+                    <Card>
+                      <Chart type="pie" data={studentPerformanceData} />
+                    </Card>
+                  </div>
+
+                  <Card>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Top Performers</h3>
+                    {topStudents.length === 0 ? (
+                      <p className="text-gray-600 text-center py-8">No student data available</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                          <thead>
+                            <tr className="bg-[#0C6B2F] text-white">
+                              <th className="px-6 py-3 text-sm">Rank</th>
+                              <th className="px-6 py-3 text-sm">Student ID</th>
+                              <th className="px-6 py-3 text-sm">Total Score</th>
+                              <th className="px-6 py-3 text-sm">Avg Percentage</th>
+                              <th className="px-6 py-3 text-sm">Attempts</th>
+                            </tr>
+                          </thead>
+
+                          <tbody className="divide-y divide-gray-200">
+                            {topStudents.map((student, index) => (
+                              <tr key={student.studentId} className="hover:bg-gray-100">
+                                <td className="px-6 py-4 font-semibold">{index + 1}</td>
+                                <td className="px-6 py-4">{student.studentId}</td>
+                                <td className="px-6 py-4">{student.totalScore}</td>
+                                <td className="px-6 py-4">{student.avgPercentage}%</td>
+                                <td className="px-6 py-4">{student.attemptCount}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </Card>
+                </>
+              )}
             </>
           )}
 
+          {/* Faculty Analytics Tab */}
           {activeTab === 'faculty' && (
             <>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Faculty Analytics</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <Card><div className="text-center"><p className="text-gray-600 text-sm">Total Faculty</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">15</p></div></Card>
-                <Card><div className="text-center"><p className="text-gray-600 text-sm">Avg Faculty Score</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">81.6</p></div></Card>
-                <Card><div className="text-center"><p className="text-gray-600 text-sm">Total Students</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">215</p></div></Card>
-                <Card><div className="text-center"><p className="text-gray-600 text-sm">Total Attempts</p><p className="text-4xl font-bold text-[#0C6B2F] mt-2">860</p></div></Card>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <Card>
-                  <Chart type="bar" data={facultyPerformanceData} options={chartOptions} />
-                </Card>
-
-                <Card>
-                  <Chart
-                    type="doughnut"
-                    data={{
-                      labels: ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English'],
-                      datasets: [
-                        {
-                          data: [45, 42, 40, 38, 50],
-                          backgroundColor: ['#0C6B2F', '#4b5563', '#6b7280', '#9ca3af', '#374151'],
-                          borderWidth: 0,
-                        },
-                      ],
-                    }}
-                  />
-                </Card>
-              </div>
-
-              <Card>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="bg-[#0C6B2F] text-white">
-                        <th className="px-6 py-3 text-sm">Faculty Name</th>
-                        <th className="px-6 py-3 text-sm">Subject</th>
-                        <th className="px-6 py-3 text-sm">Avg Score</th>
-                        <th className="px-6 py-3 text-sm">Students</th>
-                        <th className="px-6 py-3 text-sm">Attempts</th>
-                      </tr>
-                    </thead>
-
-                    <tbody className="divide-y divide-gray-200">
-                      {facultyStats.map((f, i) => (
-                        <tr key={i} className="hover:bg-gray-100">
-                          <td className="px-6 py-4 font-semibold">{f.name}</td>
-                          <td className="px-6 py-4">{f.subject}</td>
-                          <td className="px-6 py-4">{f.avgScore}</td>
-                          <td className="px-6 py-4">{f.students}</td>
-                          <td className="px-6 py-4">{f.attempts}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {facultyLoading ? (
+                <div className="text-center py-16">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#0C6B2F] mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading faculty analytics...</p>
                 </div>
-              </Card>
+              ) : facultyError ? (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+                  <p className="text-red-600 font-semibold">⚠️ {facultyError}</p>
+                  <button
+                    onClick={fetchFacultyAnalytics}
+                    className="mt-4 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : facultyAnalytics ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <Card>
+                      <div className="text-center">
+                        <p className="text-gray-600 text-sm">Avg Score</p>
+                        <p className="text-4xl font-bold text-[#0C6B2F] mt-2">
+                          {facultyAnalytics.overallStats?.avgScore || 0}
+                        </p>
+                      </div>
+                    </Card>
+                    <Card>
+                      <div className="text-center">
+                        <p className="text-gray-600 text-sm">Avg Percentage</p>
+                        <p className="text-4xl font-bold text-[#0C6B2F] mt-2">
+                          {facultyAnalytics.overallStats?.avgPercentage || 0}%
+                        </p>
+                      </div>
+                    </Card>
+                    <Card>
+                      <div className="text-center">
+                        <p className="text-gray-600 text-sm">Total Students</p>
+                        <p className="text-4xl font-bold text-[#0C6B2F] mt-2">
+                          {facultyAnalytics.overallStats?.totalStudents || 0}
+                        </p>
+                      </div>
+                    </Card>
+                    <Card>
+                      <div className="text-center">
+                        <p className="text-gray-600 text-sm">Total Attempts</p>
+                        <p className="text-4xl font-bold text-[#0C6B2F] mt-2">
+                          {facultyAnalytics.overallStats?.totalAttempts || 0}
+                        </p>
+                      </div>
+                    </Card>
+                  </div>
+
+                  <Card>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Top Performers ({facultyAnalytics.subject})</h3>
+                    {facultyAnalytics.topPerformers?.length === 0 ? (
+                      <p className="text-gray-600 text-center py-8">No data available</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                          <thead>
+                            <tr className="bg-[#0C6B2F] text-white">
+                              <th className="px-6 py-3 text-sm">Rank</th>
+                              <th className="px-6 py-3 text-sm">Student ID</th>
+                              <th className="px-6 py-3 text-sm">Total Score</th>
+                              <th className="px-6 py-3 text-sm">Avg Percentage</th>
+                            </tr>
+                          </thead>
+
+                          <tbody className="divide-y divide-gray-200">
+                            {facultyAnalytics.topPerformers?.map((student, index) => (
+                              <tr key={student.studentId} className="hover:bg-gray-100">
+                                <td className="px-6 py-4 font-semibold">{index + 1}</td>
+                                <td className="px-6 py-4">{student.studentId}</td>
+                                <td className="px-6 py-4">{student.totalScore}</td>
+                                <td className="px-6 py-4">{student.avgPercentage}%</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </Card>
+                </>
+              ) : null}
             </>
           )}
         </main>

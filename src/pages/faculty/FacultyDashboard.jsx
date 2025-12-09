@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import Card from '../../components/faculty/Card';
 import Table from '../../components/faculty/Table';
+import api from '../../api/axios';
 
 const FacultyDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     countTotal: 0,
     averageTestScore: 0,
@@ -12,7 +14,8 @@ const FacultyDashboard = () => {
   const [recentTests, setRecentTests] = useState([]);
   const [upcomingTests, setUpcomingTests] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState(null);
+  
   const facultyName = localStorage.getItem('facultyName') || 'Faculty';
 
   useEffect(() => {
@@ -21,27 +24,50 @@ const FacultyDashboard = () => {
 
   const fetchDashboardData = async () => {
     setLoading(true);
-    
-    // Using mock data (no backend)
-    setStats({
-      countTotal: 12,
-      averageTestScore: 78.5,
-      upcomingTestCount: 3
-    });
-    
-    setRecentTests([
-      { id: 1, title: 'Data Structures Mid-Term', date: '2025-12-01', attempts: 45, avgScore: 82 },
-      { id: 2, title: 'Algorithms Quiz 3', date: '2025-11-28', attempts: 52, avgScore: 75 },
-      { id: 3, title: 'Database Systems Final', date: '2025-11-25', attempts: 38, avgScore: 88 }
-    ]);
-    
-    setUpcomingTests([
-      { id: 4, title: 'Operating Systems Quiz', startDate: '2025-12-10', duration: '60 mins' },
-      { id: 5, title: 'Computer Networks Test', startDate: '2025-12-12', duration: '90 mins' },
-      { id: 6, title: 'Software Engineering Mid', startDate: '2025-12-15', duration: '120 mins' }
-    ]);
-    
-    setLoading(false);
+    setError(null);
+
+    try {
+      // Fetch all data in parallel
+      const [statsRes, recentRes, upcomingRes] = await Promise.all([
+        api.get('/faculty/dashboard/stats'),
+        api.get('/faculty/dashboard/recentTest'),
+        api.get('/faculty/dashboard/upcoming-test')
+      ]);
+
+      // Set stats
+      setStats({
+        countTotal: statsRes.data.countTotal || 0,
+        averageTestScore: Math.round(statsRes.data.averageTestScore || 0),
+        upcomingTestCount: statsRes.data.upcomingTestCount || 0
+      });
+
+      // Set recent tests - format the data
+      const formattedRecentTests = recentRes.data.data?.map(test => ({
+        id: test._id,
+        title: test.testTitle || test.title || 'Untitled Test',
+        date: test.createdAt ? new Date(test.createdAt).toLocaleDateString('en-IN') : 'N/A',
+        attempts: test.attempts || 0,
+        avgScore: test.avgScore || 0
+      })) || [];
+      setRecentTests(formattedRecentTests);
+
+      // Set upcoming tests - format the data
+      const formattedUpcomingTests = upcomingRes.data.data?.map(test => ({
+        id: test._id,
+        title: test.testTitle || test.title || 'Untitled Test',
+        startDate: test.schedule?.startDate 
+          ? new Date(test.schedule.startDate).toLocaleDateString('en-IN')
+          : 'Not scheduled',
+        duration: test.duration ? `${test.duration} mins` : 'N/A'
+      })) || [];
+      setUpcomingTests(formattedUpcomingTests);
+
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err);
+      setError(err.response?.data?.message || 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const recentTestColumns = [
@@ -60,7 +86,26 @@ const FacultyDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-gray-600 text-lg">Loading dashboard...</div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 text-lg">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center max-w-md">
+          <p className="text-red-600 font-semibold text-lg mb-4">⚠️ {error}</p>
+          <button
+            onClick={fetchDashboardData}
+            className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -99,12 +144,24 @@ const FacultyDashboard = () => {
 
       {/* Recent Tests Table */}
       <Card title="Recent Tests">
-        <Table columns={recentTestColumns} data={recentTests} />
+        {recentTests.length === 0 ? (
+          <div className="text-center py-8 text-gray-600">
+            No recent tests available
+          </div>
+        ) : (
+          <Table columns={recentTestColumns} data={recentTests} />
+        )}
       </Card>
 
       {/* Upcoming Tests Table */}
       <Card title="Upcoming Tests">
-        <Table columns={upcomingTestColumns} data={upcomingTests} />
+        {upcomingTests.length === 0 ? (
+          <div className="text-center py-8 text-gray-600">
+            No upcoming tests scheduled
+          </div>
+        ) : (
+          <Table columns={upcomingTestColumns} data={upcomingTests} />
+        )}
       </Card>
     </div>
   );

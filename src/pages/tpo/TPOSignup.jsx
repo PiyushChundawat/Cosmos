@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
+import api from '../../api/axios';
 
 export default function TPOSignup() {
   const [form, setForm] = useState({
@@ -53,24 +54,35 @@ export default function TPOSignup() {
 
     setLoading(true);
     try {
-      // Generate mock codes for demonstration
-      const studentCode = 'STU' + Math.random().toString(36).substr(2, 9).toUpperCase();
-      const facultyCode = 'FAC' + Math.random().toString(36).substr(2, 9).toUpperCase();
+      const response = await api.post('/auth/tpo/signup', {
+          collegeName: form.collegeName,        // Changed
+          collegeEmailDomain: form.collegeEmail, // Changed
+          address: form.address,
+          tpoName: form.tpoName,
+          tpoEmail: form.tpoEmail,
+          tpoPhone: form.phone,
+          password: form.password,
+          amount: form.amount,                   // Changed
+      });
 
+      // Set codes from backend response
       setCodes({
-        studentCode: studentCode,
-        facultyCode: facultyCode,
+        studentCode: response.data.studentCode || response.data.codes?.studentCode,
+        facultyCode: response.data.facultyCode || response.data.codes?.facultyCode,
       });
 
       // Store user info in localStorage for dashboard
-      localStorage.setItem('tpo_token', 'mock-token-' + Date.now());
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('tpo_token', response.data.token);
       localStorage.setItem('tpo_college', form.collegeName);
       localStorage.setItem('tpo_user', form.tpoName);
       localStorage.setItem('tpo_email', form.tpoEmail);
 
     } catch (error) {
       console.error('Signup error:', error);
-      setErrors({ submit: 'Signup failed. Please try again.' });
+      setErrors({ 
+        submit: error.response?.data?.message || 'Signup failed. Please try again.' 
+      });
     } finally {
       setLoading(false);
     }
@@ -163,6 +175,7 @@ export default function TPOSignup() {
                   onChange={handleChange}
                   placeholder="e.g., MNNIT Allahabad"
                   error={errors.collegeName}
+                  disabled={loading}
                   required
                 />
 
@@ -173,6 +186,7 @@ export default function TPOSignup() {
                   onChange={handleChange}
                   placeholder="e.g., mnnit.ac.in"
                   error={errors.collegeEmail}
+                  disabled={loading}
                   required
                 />
 
@@ -183,6 +197,7 @@ export default function TPOSignup() {
                   onChange={handleChange}
                   placeholder="e.g., Allahabad, UP, India"
                   error={errors.address}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -203,6 +218,7 @@ export default function TPOSignup() {
                   onChange={handleChange}
                   placeholder="e.g., Dr. John Doe"
                   error={errors.tpoName}
+                  disabled={loading}
                   required
                 />
 
@@ -214,6 +230,7 @@ export default function TPOSignup() {
                   onChange={handleChange}
                   placeholder="e.g., tpo@college.edu"
                   error={errors.tpoEmail}
+                  disabled={loading}
                   required
                 />
 
@@ -225,6 +242,7 @@ export default function TPOSignup() {
                   onChange={handleChange}
                   placeholder="e.g., 9876543210"
                   error={errors.phone}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -256,6 +274,7 @@ export default function TPOSignup() {
                   onChange={handleChange}
                   placeholder="Enter a strong password"
                   error={errors.password}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -271,7 +290,8 @@ export default function TPOSignup() {
             {/* Submit Button */}
             <Button 
               size="lg" 
-              loading={loading} 
+              loading={loading}
+              disabled={loading}
               className="w-full"
               type="submit"
             >

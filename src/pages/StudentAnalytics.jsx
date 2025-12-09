@@ -8,30 +8,15 @@ import { studentAnalyticsAPI } from '../services/api';
 
 export default function StudentAnalytics() {
   const [filters, setFilters] = useState({ testId: '', subject: '' });
-  const [data, setData] = useState(null);
+  const [performanceData, setPerformanceData] = useState(null);
   const [topPerformers, setTopPerformers] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  const mockPerformanceBands = {
-    labels: ['Below 40%', '40-70%', 'Above 70%'],
-    datasets: [
-      {
-        label: 'Student Count',
-        data: [45, 120, 85],
-        backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
-        borderColor: ['#dc2626', '#d97706', '#059669'],
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  const mockTopPerformers = [
-    { rank: 1, name: 'Aarav Sharma', score: 95, percentage: 95, attempts: 5 },
-    { rank: 2, name: 'Priya Singh', score: 92, percentage: 92, attempts: 4 },
-    { rank: 3, name: 'Arjun Patel', score: 89, percentage: 89, attempts: 3 },
-    { rank: 4, name: 'Diya Verma', score: 87, percentage: 87, attempts: 4 },
-    { rank: 5, name: 'Rohan Kumar', score: 85, percentage: 85, attempts: 3 },
-  ];
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    avgScore: 0,
+    passRate: 0,
+    avgAttempts: 0
+  });
 
   const chartOptions = {
     plugins: {
@@ -42,7 +27,6 @@ export default function StudentAnalytics() {
     scales: {
       y: {
         beginAtZero: true,
-        max: 150,
       },
     },
   };
@@ -54,17 +38,83 @@ export default function StudentAnalytics() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Mock API calls - replace with actual API calls when backend is ready
-      // const performanceRes = await studentAnalyticsAPI.getPerformanceBands(filters.testId, filters.subject);
-      // const topRes = await studentAnalyticsAPI.getTopPerformers();
-      // setData(performanceRes.data);
-      // setTopPerformers(topRes.data);
+      // Build query params
+      const params = {};
+      if (filters.testId) params.testId = filters.testId;
+      if (filters.subject) params.subject = filters.subject;
 
-      // Using mock data for demonstration
-      setData(mockPerformanceBands);
-      setTopPerformers(mockTopPerformers);
+      // Fetch performance bands
+      const performanceRes = await studentAnalyticsAPI.getPerformanceBands(params);
+      const performanceBandsData = performanceRes.data;
+
+      // Fetch top performers
+      const topRes = await studentAnalyticsAPI.getTopPerformers(params);
+      const topPerformersData = topRes.data;
+
+      // Transform performance bands data for charts
+      const below40Count = performanceBandsData.below_40?.length || 0;
+      const between40_70Count = performanceBandsData.between_40_70?.length || 0;
+      const above70Count = performanceBandsData.above_70?.length || 0;
+
+      const chartData = {
+        labels: ['Below 40%', '40-70%', 'Above 70%'],
+        datasets: [
+          {
+            label: 'Student Count',
+            data: [below40Count, between40_70Count, above70Count],
+            backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+            borderColor: ['#dc2626', '#d97706', '#059669'],
+            borderWidth: 2,
+          },
+        ],
+      };
+
+      setPerformanceData(chartData);
+
+      // Transform top performers data for table
+      const formattedTopPerformers = topPerformersData.map((performer, index) => ({
+        rank: index + 1,
+        name: performer.studentId, // Replace with actual name if available from populated data
+        score: performer.totalScore,
+        percentage: performer.avgPercentage,
+        attempts: performer.attemptCount
+      }));
+
+      setTopPerformers(formattedTopPerformers);
+
+      // Calculate summary statistics
+      const totalStudents = below40Count + between40_70Count + above70Count;
+      const passCount = between40_70Count + above70Count; // Students with 40% or more
+      const passRate = totalStudents > 0 ? ((passCount / totalStudents) * 100).toFixed(0) : 0;
+
+      // Calculate average score from top performers (or all students if available)
+      const avgScore = topPerformersData.length > 0
+        ? (topPerformersData.reduce((sum, p) => sum + p.avgPercentage, 0) / topPerformersData.length).toFixed(1)
+        : 0;
+
+      // Calculate average attempts
+      const avgAttempts = topPerformersData.length > 0
+        ? (topPerformersData.reduce((sum, p) => sum + p.attemptCount, 0) / topPerformersData.length).toFixed(1)
+        : 0;
+
+      setStats({
+        totalStudents,
+        avgScore,
+        passRate,
+        avgAttempts
+      });
+
     } catch (error) {
       console.error('Error fetching analytics:', error);
+      // Reset to empty state on error
+      setPerformanceData(null);
+      setTopPerformers([]);
+      setStats({
+        totalStudents: 0,
+        avgScore: 0,
+        passRate: 0,
+        avgAttempts: 0
+      });
     } finally {
       setLoading(false);
     }
@@ -117,23 +167,31 @@ export default function StudentAnalytics() {
           {/* Charts Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <Card title="📊 Performance Distribution">
-              {data && (
+              {performanceData ? (
                 <Chart
                   type="bar"
-                  data={data}
+                  data={performanceData}
                   options={chartOptions}
                   title="Students by Performance Band"
                 />
+              ) : (
+                <div className="flex items-center justify-center h-64 text-gray-500">
+                  {loading ? 'Loading...' : 'No data available'}
+                </div>
               )}
             </Card>
 
             <Card title="📈 Performance Pie Chart">
-              {data && (
+              {performanceData ? (
                 <Chart
                   type="pie"
-                  data={data}
+                  data={performanceData}
                   title="Performance Distribution %"
                 />
+              ) : (
+                <div className="flex items-center justify-center h-64 text-gray-500">
+                  {loading ? 'Loading...' : 'No data available'}
+                </div>
               )}
             </Card>
           </div>
@@ -141,41 +199,47 @@ export default function StudentAnalytics() {
           {/* Top Performers Table */}
           <Card title="🏆 Top 5 Performers">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white">
-                    <th className="px-6 py-3 text-left text-sm font-semibold">Rank</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold">Name</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold">Score</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold">Percentage</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold">Attempts</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {topPerformers.map((performer) => (
-                    <tr
-                      key={performer.rank}
-                      className="hover:bg-emerald-50 transition-colors group"
-                    >
-                      <td className="px-6 py-4">
-                        <span className="inline-block w-8 h-8 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-full text-center text-sm font-bold leading-8">
-                          {performer.rank}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-gray-900 group-hover:text-emerald-700">
-                        {performer.name}
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-gray-900">{performer.score}</td>
-                      <td className="px-6 py-4">
-                        <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-semibold">
-                          {performer.percentage}%
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-700">{performer.attempts}</td>
+              {topPerformers.length > 0 ? (
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white">
+                      <th className="px-6 py-3 text-left text-sm font-semibold">Rank</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">Student ID</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">Score</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">Percentage</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">Attempts</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {topPerformers.map((performer) => (
+                      <tr
+                        key={performer.rank}
+                        className="hover:bg-emerald-50 transition-colors group"
+                      >
+                        <td className="px-6 py-4">
+                          <span className="inline-block w-8 h-8 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-full text-center text-sm font-bold leading-8">
+                            {performer.rank}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-gray-900 group-hover:text-emerald-700">
+                          {performer.name}
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-gray-900">{performer.score}</td>
+                        <td className="px-6 py-4">
+                          <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-semibold">
+                            {performer.percentage}%
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">{performer.attempts}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="flex items-center justify-center h-32 text-gray-500">
+                  {loading ? 'Loading...' : 'No top performers data available'}
+                </div>
+              )}
             </div>
           </Card>
 
@@ -184,25 +248,25 @@ export default function StudentAnalytics() {
             <Card>
               <div className="text-center">
                 <p className="text-gray-600 text-sm font-medium">Total Students</p>
-                <p className="text-4xl font-bold text-emerald-700 mt-2">250</p>
+                <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.totalStudents}</p>
               </div>
             </Card>
             <Card>
               <div className="text-center">
                 <p className="text-gray-600 text-sm font-medium">Avg Score</p>
-                <p className="text-4xl font-bold text-emerald-700 mt-2">78.5</p>
+                <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.avgScore}</p>
               </div>
             </Card>
             <Card>
               <div className="text-center">
                 <p className="text-gray-600 text-sm font-medium">Pass Rate</p>
-                <p className="text-4xl font-bold text-emerald-700 mt-2">92%</p>
+                <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.passRate}%</p>
               </div>
             </Card>
             <Card>
               <div className="text-center">
                 <p className="text-gray-600 text-sm font-medium">Avg Attempts</p>
-                <p className="text-4xl font-bold text-emerald-700 mt-2">3.8</p>
+                <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.avgAttempts}</p>
               </div>
             </Card>
           </div>
