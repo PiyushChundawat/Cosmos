@@ -1,11 +1,12 @@
 const Student = require("../models/student.model");
 const TestAttempt = require("../models/Student/testAttempt");
 const ResumeAnalysis = require("../models/resumeAnalysis.model");
-
 const Test = require("../models/Faculty/test");
 const bcrypt = require("bcryptjs");
 
-// POST /api/student/create  (route tum jaisa chaaho waise rakho)
+// ---------------------------------------------
+// CREATE STUDENT
+// ---------------------------------------------
 exports.createStudent = async (req, res) => {
   try {
     const {
@@ -19,7 +20,6 @@ exports.createStudent = async (req, res) => {
       ...rest
     } = req.body;
 
-    // already registered?
     const existing = await Student.findOne({ email });
     if (existing) {
       return res
@@ -27,48 +27,47 @@ exports.createStudent = async (req, res) => {
         .json({ message: "Student with this email already exists" });
     }
 
-    // password hash
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const student = new Student({
       name,
       email,
-      password: hashedPassword,
+      passwordHash: hashedPassword, // ✅ FIX
       collegeId,
       branch,
       year,
       rollNumber,
-      ...rest, // agar schema me aur fields hon to bhi aa jayenge
+      ...rest,
     });
 
     await student.save();
 
-    return res.status(201).json({
+    res.status(201).json({
       message: "Student created successfully",
       student,
     });
   } catch (err) {
     console.error("Error creating student:", err);
-    return res.status(500).json({ message: "Error creating student" });
+    res.status(500).json({ message: "Error creating student" });
   }
 };
 
-// GET /api/student/dashboard/:id
+// ---------------------------------------------
+// STUDENT DASHBOARD
+// ---------------------------------------------
 exports.getDashboard = async (req, res) => {
   try {
     const studentId = req.params.id;
 
     const student = await Student.findById(studentId).lean();
-    if (!student) return res.status(404).json({ message: "Student not found" });
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
 
-    const collegeId = student.collegeId; // 🔴 key
+    const collegeId = student.collegeId;
 
     const resume = await ResumeAnalysis.findOne({ studentId })
       .sort({ analyzedAt: -1 })
-      .lean();
-
-    const roadmap = await Roadmap.findOne({ studentId })
-      .sort({ createdAt: -1 })
       .lean();
 
     const attempts = await TestAttempt.find({ studentId, collegeId })
@@ -77,6 +76,7 @@ exports.getDashboard = async (req, res) => {
       .lean();
 
     const totalTestsTaken = attempts.length;
+
     const avgScore =
       totalTestsTaken === 0
         ? 0
@@ -88,8 +88,6 @@ exports.getDashboard = async (req, res) => {
         ? 0
         : attempts.reduce((sum, a) => sum + (a.percentage || 0), 0) /
           totalTestsTaken;
-
-    const resumeScore = Math.round((avgPercentage / 10) * 10) / 10;
 
     const now = new Date();
     const upcomingTests = await Test.find({
@@ -104,13 +102,17 @@ exports.getDashboard = async (req, res) => {
     res.json({
       student,
       resume,
-      roadmap,
-      stats: { totalTestsTaken, avgScore, avgPercentage, resumeScore },
+      stats: {
+        totalTestsTaken,
+        avgScore,
+        avgPercentage,
+        resumeScore: student.placementReadinessScore || 0,
+      },
       upcomingTests,
       attempts,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Dashboard error:", err);
     res.status(500).json({ message: "Error fetching dashboard" });
   }
 };

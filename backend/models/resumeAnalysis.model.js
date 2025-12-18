@@ -6,6 +6,8 @@ const resumeAnalysisSchema = new mongoose.Schema({
   score: Number,
   summary: String,
   skills: [String],
+  strengths: [String],        // ✅ ADD
+  improvements: [String],     // ✅ ADD
   fileUrl: String
 });
 

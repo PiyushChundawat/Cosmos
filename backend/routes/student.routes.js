@@ -1,31 +1,36 @@
 const express = require("express");
 const router = express.Router();
 
-// Student Dashboard Controller
-const studentController = require("../controllers/student.controller");
+const auth = require("../middleware/authMiddleware"); // ✅ ADD THIS
 
-// Student Test Controller (NEW)
+// Controllers
+const studentController = require("../controllers/student.controller");
 const studentTestController = require("../controllers/studentTest.controller");
 
-// ---------------------------------------------
-// STUDENT PROFILE / DASHBOARD ROUTES
-// ---------------------------------------------
+// PUBLIC (signup)
 router.post("/", studentController.createStudent);
-router.get("/dashboard/:id", studentController.getDashboard);
 
-// ---------------------------------------------
-// STUDENT TEST SYSTEM ROUTES (IMPORTANT)
-// ---------------------------------------------
-// 1) UPCOMING TESTS LIST
-router.get("/upcoming-tests/:studentId", studentTestController.getUpcomingTests);
+// PROTECTED (login ke baad)
+router.get("/dashboard/:id", auth, studentController.getDashboard);
 
-// 2) ONE TEST + QUESTIONS FOR ATTEMPT
-router.get("/test/:testId", studentTestController.getTestForAttempt);
+router.get(
+  "/upcoming-tests/:studentId",
+  auth,
+  studentTestController.getUpcomingTests
+);
 
-// 3) STUDENT SUBMITS ATTEMPT
-router.post("/test/:testId/attempt", studentTestController.submitTestAttempt);
+router.get("/test/:testId", auth, studentTestController.getTestForAttempt);
 
-// 4) STUDENT PERFORMANCE (attempts + resumeScore + feedback)
-router.get("/:studentId/performance", studentTestController.getStudentPerformance);
+router.post(
+  "/test/:testId/attempt",
+  auth,
+  studentTestController.submitTestAttempt
+);
+
+router.get(
+  "/:studentId/performance",
+  auth,
+  studentTestController.getStudentPerformance
+);
 
 module.exports = router;

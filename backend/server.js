@@ -53,7 +53,7 @@ const facultyTestAnalyticsRoutes = require("./routes/Faculty/testAnalytics.route
 const facultyTestRoutes = require("./routes/Faculty/testRoutes");
 
 // STUDENT PANEL
-const studentTestRoutes = require("./routes/Student/testRoutes");
+//const studentTestRoutes = require("./routes/Student/testRoutes");
 
 // ------------- BASE TEST ROUTE -------------
 app.get("/", (req, res) => {
@@ -95,7 +95,7 @@ app.use("/api/faculty/test-analytics", facultyTestAnalyticsRoutes);
 app.use("/api/faculty/tests", facultyTestRoutes);
 
 // student panel
-app.use("/api/student/tests", studentTestRoutes);
+//app.use("/api/student/tests", studentTestRoutes);
 
 // ------------- START SERVER AFTER DB CONNECT -------------
 const PORT = process.env.PORT || 5000;
