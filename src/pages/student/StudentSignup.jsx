@@ -56,7 +56,6 @@ export default function StudentSignup() {
         department: formData.department,
       });
 
-      // Show success message or redirect to login
       alert('Signup successful! Please login with your credentials.');
       navigate('/student/login');
     } catch (error) {
@@ -69,16 +68,16 @@ export default function StudentSignup() {
     }
   };
 
-  const inputClass = (error) => `w-full px-4 py-3 border ${
+  const inputClass = (error) => `w-full px-4 py-3 border-2 ${
     error ? 'border-red-500' : 'border-gray-300'
-  } focus:outline-none focus:border-emerald-600 disabled:bg-gray-100 disabled:cursor-not-allowed`;
+  } rounded-xl focus:outline-none focus:border-indigo-600 disabled:bg-gray-100 disabled:cursor-not-allowed transition`;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
-        <div className="bg-white border border-gray-200 p-8 rounded-xl">
+        <div className="bg-white border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">COSMOS</h1>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-1">COSMOS</h1>
             <p className="text-gray-600">Student Portal - Sign Up</p>
           </div>
 
@@ -203,15 +202,15 @@ export default function StudentSignup() {
             </div>
 
             {errors.submit && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-600 text-sm font-semibold">⚠️ {errors.submit}</p>
+              <div className="bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-2xl">
+                <p className="text-red-600 text-sm font-semibold">{errors.submit}</p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-emerald-600 text-white font-medium py-3 hover:bg-emerald-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 transition shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {loading ? 'Signing up...' : 'Sign Up'}
             </button>
@@ -219,7 +218,7 @@ export default function StudentSignup() {
             <div className="text-center pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-600">
                 Already have an account?{' '}
-                <Link to="/student/login" className="text-emerald-600 font-medium hover:text-emerald-700">
+                <Link to="/student/login" className="text-indigo-600 font-medium hover:text-indigo-700">
                   Login
                 </Link>
               </p>

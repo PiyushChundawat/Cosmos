@@ -39,7 +39,6 @@ export default function TPOLogin() {
         tpoCode: form.tpoCode,
       });
 
-      // Store token and user info
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       localStorage.setItem('tpo_token', response.data.token);
@@ -60,7 +59,7 @@ export default function TPOLogin() {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-gray-50 rounded-xl shadow-md p-10">
+      <div className="w-full max-w-md bg-gray-50 rounded-lg shadow-sm hover:shadow-md p-3">
         <h1 className="text-3xl font-bold text-center text-gray-900">TPO Login</h1>
         <p className="text-gray-600 text-center text-sm mt-1">Access your TPO portal</p>
 
@@ -102,7 +101,7 @@ export default function TPOLogin() {
 
           {errors.submit && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-600 text-sm font-semibold">⚠️ {errors.submit}</p>
+              <p className="text-red-600 text-sm font-semibold">{errors.submit}</p>
             </div>
           )}
 

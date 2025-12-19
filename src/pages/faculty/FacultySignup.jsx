@@ -56,10 +56,10 @@ export default function FacultySignup() {
           <p className="text-gray-600 mt-1">Create your faculty account</p>
         </div>
 
-        <div className="bg-gray-50 rounded-xl p-8 border border-gray-200">
+        <div className="bg-gray-50 rounded-lg shadow-sm hover:shadow-md p-3">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              ⚠️ {error}
+              {error}
             </div>
           )}
 

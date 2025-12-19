@@ -10,20 +10,20 @@ export default function Button({
   className = '',
 }) {
   const baseClasses =
-    'font-semibold rounded-lg transition-all duration-300 active:scale-95';
+    'font-semibold rounded-xl transition shadow-md';
 
   const variants = {
     primary:
-      'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:from-emerald-700 hover:to-emerald-800 hover:shadow-lg',
+      'bg-indigo-600 text-white hover:bg-indigo-700',
     secondary:
-      'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300',
+      'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-2 border-indigo-300',
     danger: 'bg-red-600 text-white hover:bg-red-700',
   };
 
   const sizes = {
-    sm: 'px-3 py-2 text-sm',
-    md: 'px-6 py-3 text-base',
-    lg: 'px-8 py-4 text-lg w-full',
+    sm: 'px-3 py-1 text-sm',
+    md: 'px-4 py-2 text-base',
+    lg: 'px-6 py-2 text-lg w-full',
   };
 
   return (

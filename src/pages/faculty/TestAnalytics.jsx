@@ -158,187 +158,195 @@ const TestAnalytics = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-600 text-lg">Loading analytics...</div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto"></div>
+          <p className="text-gray-600 mt-4 text-lg">Loading analytics...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {error}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl">
+            {error}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          {summary?.subject || 'Test Analytics'}
-        </h1>
-        <p className="text-gray-600 mt-1">Comprehensive performance analysis</p>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600 text-sm font-medium">Total Attempts</p>
-          <p className="text-4xl font-bold text-gray-900 mt-2">
-            {summary?.totalAttempts || 0}
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">
+            {summary?.subject || 'Test Analytics'}
+          </h1>
+          <p className="text-gray-600 mt-2">Comprehensive performance analysis</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600 text-sm font-medium">Average Score</p>
-          <p className="text-4xl font-bold text-gray-900 mt-2">
-            {summary?.averageScore || 0}
-          </p>
-        </div>
+        <div className="space-y-6">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <p className="text-gray-600 text-sm font-medium">Total Attempts</p>
+              <p className="text-4xl font-bold text-gray-900 mt-3">
+                {summary?.totalAttempts || 0}
+              </p>
+            </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600 text-sm font-medium">Average Percentage</p>
-          <p className="text-4xl font-bold text-gray-900 mt-2">
-            {summary?.averagePercentage || 0}%
-          </p>
-        </div>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <p className="text-gray-600 text-sm font-medium">Average Score</p>
+              <p className="text-4xl font-bold text-gray-900 mt-3">
+                {summary?.averageScore || 0}
+              </p>
+            </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600 text-sm font-medium">Highest Score</p>
-          <p className="text-4xl font-bold text-emerald-600 mt-2">
-            {summary?.highestScore || 0}
-          </p>
-        </div>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <p className="text-gray-600 text-sm font-medium">Average Percentage</p>
+              <p className="text-4xl font-bold text-gray-900 mt-3">
+                {summary?.averagePercentage || 0}%
+              </p>
+            </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600 text-sm font-medium">Lowest Score</p>
-          <p className="text-4xl font-bold text-red-600 mt-2">
-            {summary?.lowestScore || 0}
-          </p>
-        </div>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <p className="text-gray-600 text-sm font-medium">Highest Score</p>
+              <p className="text-4xl font-bold text-emerald-600 mt-3">
+                {summary?.highestScore || 0}
+              </p>
+            </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600 text-sm font-medium">Pass Rate</p>
-          <p className="text-4xl font-bold text-gray-900 mt-2">
-            {summary?.passRate || 0}%
-          </p>
-        </div>
-      </div>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <p className="text-gray-600 text-sm font-medium">Lowest Score</p>
+              <p className="text-4xl font-bold text-red-600 mt-3">
+                {summary?.lowestScore || 0}
+              </p>
+            </div>
 
-      {/* Question-wise Accuracy */}
-      {questionStats.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Question-wise Accuracy</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  {questionColumns.map((col, idx) => (
-                    <th
-                      key={idx}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {col.header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {questionStats.map((row, rowIdx) => (
-                  <tr key={rowIdx}>
-                    {questionColumns.map((col, colIdx) => (
-                      <td key={colIdx} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {col.render ? col.render(row, rowIdx) : row[col.accessor]}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <p className="text-gray-600 text-sm font-medium">Pass Rate</p>
+              <p className="text-4xl font-bold text-gray-900 mt-3">
+                {summary?.passRate || 0}%
+              </p>
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Performance Tables */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Top Performers */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 text-emerald-700">
-            Top 5 Performers
-          </h2>
-          {topPerformers.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {topPerformersColumns.map((col, idx) => (
-                      <th
-                        key={idx}
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        {col.header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {topPerformers.map((row, rowIdx) => (
-                    <tr key={rowIdx}>
-                      {topPerformersColumns.map((col, colIdx) => (
-                        <td key={colIdx} className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {col.render ? col.render(row, rowIdx) : row[col.accessor]}
-                        </td>
+          {/* Question-wise Accuracy */}
+          {questionStats.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <h2 className="text-xl font-semibold mb-6 text-gray-900">Question-wise Accuracy</h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      {questionColumns.map((col, idx) => (
+                        <th
+                          key={idx}
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          {col.header}
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No data available</p>
-          )}
-        </div>
-
-        {/* Worst Performers */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 text-red-700">
-            Students Needing Support
-          </h2>
-          {worstPerformers.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {worstPerformersColumns.map((col, idx) => (
-                      <th
-                        key={idx}
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        {col.header}
-                      </th>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {questionStats.map((row, rowIdx) => (
+                      <tr key={rowIdx} className="hover:bg-gray-50">
+                        {questionColumns.map((col, colIdx) => (
+                          <td key={colIdx} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {col.render ? col.render(row, rowIdx) : row[col.accessor]}
+                          </td>
+                        ))}
+                      </tr>
                     ))}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {worstPerformers.map((row, rowIdx) => (
-                    <tr key={rowIdx}>
-                      {worstPerformersColumns.map((col, colIdx) => (
-                        <td key={colIdx} className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {col.render ? col.render(row, rowIdx) : row[col.accessor]}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No data available</p>
           )}
+
+          {/* Performance Tables */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Top Performers */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <h2 className="text-xl font-semibold mb-6 text-emerald-700">
+                Top 5 Performers
+              </h2>
+              {topPerformers.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        {topPerformersColumns.map((col, idx) => (
+                          <th
+                            key={idx}
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            {col.header}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {topPerformers.map((row, rowIdx) => (
+                        <tr key={rowIdx} className="hover:bg-gray-50">
+                          {topPerformersColumns.map((col, colIdx) => (
+                            <td key={colIdx} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {col.render ? col.render(row, rowIdx) : row[col.accessor]}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">No data available</p>
+              )}
+            </div>
+
+            {/* Worst Performers */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <h2 className="text-xl font-semibold mb-6 text-red-700">
+                Students Needing Support
+              </h2>
+              {worstPerformers.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        {worstPerformersColumns.map((col, idx) => (
+                          <th
+                            key={idx}
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            {col.header}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {worstPerformers.map((row, rowIdx) => (
+                        <tr key={rowIdx} className="hover:bg-gray-50">
+                          {worstPerformersColumns.map((col, colIdx) => (
+                            <td key={colIdx} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {col.render ? col.render(row, rowIdx) : row[col.accessor]}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">No data available</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

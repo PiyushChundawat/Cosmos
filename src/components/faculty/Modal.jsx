@@ -20,9 +20,9 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
         ></div>
 
         {/* Modal */}
-        <div className={`inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle ${sizes[size]} w-full`}>
+        <div className={`inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle ${sizes[size]} w-full`}>
           {/* Header */}
-          <div className="bg-emerald-50 px-6 py-4 border-b border-emerald-100">
+          <div className="bg-emerald-50 px-4 py-3 border-b border-emerald-100">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
               <button
@@ -37,7 +37,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
           </div>
 
           {/* Content */}
-          <div className="px-6 py-5">
+          <div className="px-4 py-4">
             {children}
           </div>
         </div>

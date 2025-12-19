@@ -34,7 +34,7 @@ const InputField = ({
           placeholder={placeholder}
           required={required}
           disabled={disabled}
-          className={`w-full px-4 py-2.5 ${icon ? 'pl-10' : ''} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${error ? 'border-red-500' : ''}`}
+          className={`w-full px-4 py-2 ${icon ? 'pl-10' : ''} border-2 border-gray-300 rounded-xl focus:outline-none focus:border-indigo-600 disabled:bg-gray-100 disabled:cursor-not-allowed transition ${error ? 'border-red-500' : ''}`}
         />
       </div>
       {error && <p className="text-sm text-red-500 mt-1">{error}</p>}

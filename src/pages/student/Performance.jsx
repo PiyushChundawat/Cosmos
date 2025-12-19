@@ -30,29 +30,43 @@ export default function Performance() {
   const trendScores = [65, 72, 68, 85, 78, 90, 85, 88, 95, 82, 76, 85];
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Performance Analytics</h1>
-          <p className="text-gray-600 mt-1">Track your test results and progress</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <header className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 shadow-sm">
+        <div className="max-w-5xl mx-auto px-6 py-4">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Performance Analytics</h1>
+          <p className="text-gray-600">Track your test results and progress</p>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-gray-50 border border-gray-200 rounded-xl p-6"
-            >
-              <p className="text-gray-600 text-sm font-medium">{stat.title}</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
-            </div>
-          ))}
+      <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {stats.map((stat, index) => {
+            const gradients = [
+              "from-purple-500 to-pink-600",
+              "from-emerald-500 to-teal-600", 
+              "from-orange-500 to-red-600",
+              "from-blue-500 to-indigo-600"
+            ];
+            const textColors = [
+              "text-purple-100",
+              "text-emerald-100",
+              "text-orange-100", 
+              "text-blue-100"
+            ];
+            return (
+              <div
+                key={index}
+                className={`bg-gradient-to-br ${gradients[index]} rounded-2xl p-4 text-white shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300`}
+              >
+                <p className={`text-xs ${textColors[index]} font-medium`}>{stat.title}</p>
+                <p className="text-2xl font-bold mt-2">{stat.value}</p>
+              </div>
+            );
+          })}
         </div>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Score Trend</h2>
+        <div className="bg-white border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
+          <h2 className="text-xl font-bold text-indigo-800 mb-6">Score Trend</h2>
           <div className="h-64 flex items-end justify-between gap-3">
             {trendScores.map((score, index) => (
               <div key={index} className="flex-1 flex flex-col items-center">
@@ -60,7 +74,7 @@ export default function Performance() {
                   {score}%
                 </div>
                 <div
-                  className="w-full bg-emerald-600 rounded-t-lg"
+                  className="w-full bg-indigo-600 rounded-t-xl"
                   style={{ height: `${(score / 100) * 220}px` }}
                 />
                 <div className="text-xs text-gray-500 mt-2">
@@ -71,43 +85,43 @@ export default function Performance() {
           </div>
         </div>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-900">Recent Test Attempts</h2>
+        <div className="bg-white border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
+          <div className="px-6 py-4 border-b border-indigo-200">
+            <h2 className="text-xl font-bold text-indigo-800">Recent Test Attempts</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-100 text-gray-800">
-                  <th className="px-6 py-3 text-left font-semibold">#</th>
-                  <th className="px-6 py-3 text-left font-semibold">Test Name</th>
-                  <th className="px-6 py-3 text-left font-semibold">Date</th>
-                  <th className="px-6 py-3 text-left font-semibold">Score</th>
-                  <th className="px-6 py-3 text-left font-semibold">Percentage</th>
-                  <th className="px-6 py-3 text-left font-semibold">Status</th>
-                  <th className="px-6 py-3 text-left font-semibold">Action</th>
+                <tr className="bg-indigo-50 text-indigo-800">
+                  <th className="px-4 py-3 text-left font-semibold">#</th>
+                  <th className="px-4 py-3 text-left font-semibold">Test Name</th>
+                  <th className="px-4 py-3 text-left font-semibold">Date</th>
+                  <th className="px-4 py-3 text-left font-semibold">Score</th>
+                  <th className="px-4 py-3 text-left font-semibold">Percentage</th>
+                  <th className="px-4 py-3 text-left font-semibold">Status</th>
+                  <th className="px-4 py-3 text-left font-semibold">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-indigo-200">
                 {recentAttempts.map((attempt, index) => (
-                  <tr key={attempt.id} className="hover:bg-gray-100">
-                    <td className="px-6 py-4 font-semibold text-gray-900">
+                  <tr key={attempt.id} className="hover:bg-indigo-50 transition">
+                    <td className="px-4 py-3 font-semibold text-gray-900">
                       {index + 1}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <p className="font-semibold text-gray-900">
                         {attempt.testName}
                       </p>
                     </td>
-                    <td className="px-6 py-4 text-gray-600">
+                    <td className="px-4 py-3 text-gray-600">
                       {attempt.date}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <span className="font-semibold text-gray-900">
                         {attempt.score}/{attempt.total}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <span
                         className={`font-semibold text-lg ${getScoreColor(
                           attempt.percentage
@@ -116,7 +130,7 @@ export default function Performance() {
                         {attempt.percentage}%
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
                           attempt.status
@@ -125,8 +139,8 @@ export default function Performance() {
                         {attempt.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <button className="text-emerald-600 hover:text-emerald-700 font-semibold">
+                    <td className="px-4 py-3">
+                      <button className="text-indigo-600 hover:text-indigo-700 font-semibold">
                         View Details
                       </button>
                     </td>
@@ -137,9 +151,9 @@ export default function Performance() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Strong Areas</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
+            <h3 className="text-xl font-bold text-indigo-800 mb-4">Strong Areas</h3>
             <ul className="space-y-3 text-gray-700">
               <li>Logical Reasoning: 90% average</li>
               <li>Aptitude Tests: 85% average</li>
@@ -147,8 +161,8 @@ export default function Performance() {
             </ul>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Areas to Improve</h3>
+          <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
+            <h3 className="text-xl font-bold text-indigo-800 mb-4">Areas to Improve</h3>
             <ul className="space-y-3 text-gray-700">
               <li>Coding Challenges: 65% average</li>
               <li>Technical Assessment: 72% average</li>
@@ -156,7 +170,7 @@ export default function Performance() {
             </ul>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

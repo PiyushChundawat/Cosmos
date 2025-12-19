@@ -91,9 +91,9 @@ export default function TPOSignup() {
   // Success Screen
   if (codes) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          <Card className="text-center border-2 border-emerald-300">
+          <Card className="text-center">
             <div className="text-6xl mb-4">✅</div>
             <h2 className="text-3xl font-bold text-emerald-700 mb-2">Signup Successful!</h2>
             <p className="text-gray-600 mb-8">Your college has been registered</p>
@@ -143,8 +143,8 @@ export default function TPOSignup() {
 
   // Signup Form Screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 py-12 px-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-white py-8 px-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -154,12 +154,10 @@ export default function TPOSignup() {
         </div>
 
         {/* Main Form Card */}
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-emerald-100">
-          <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-8">
-            <h2 className="text-2xl font-bold text-white">College & TPO Registration</h2>
-          </div>
+        <div className="bg-gray-50 rounded-lg shadow-sm hover:shadow-md p-3">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">College & TPO Registration</h2>
 
-          <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* College Details Section */}
             <div className="border-b-2 border-gray-200 pb-8">
               <div className="flex items-center gap-3 mb-6">

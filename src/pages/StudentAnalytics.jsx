@@ -129,8 +129,8 @@ export default function StudentAnalytics() {
       <Sidebar />
 
       <div className="flex-1">
-        <header className="bg-white shadow-sm border-b-4 border-emerald-600 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-6 py-4">
+        <header className="bg-white shadow-sm sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 py-3">
             <h1 className="text-3xl font-bold text-gray-900">
               <span className="text-emerald-600">Student</span> Analytics
             </h1>
@@ -138,9 +138,9 @@ export default function StudentAnalytics() {
           </div>
         </header>
 
-        <main className="max-w-7xl mx-auto px-6 py-8">
+        <main className="max-w-7xl mx-auto px-4 py-6">
           {/* Filters */}
-          <Card className="mb-8" title="📋 Filters">
+          <Card className="mb-6 bg-emerald-50" title="📋 Filters">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
                 label="Test ID"
@@ -165,8 +165,8 @@ export default function StudentAnalytics() {
           </Card>
 
           {/* Charts Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <Card title="📊 Performance Distribution">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <Card className="bg-emerald-50" title="📊 Performance Distribution">
               {performanceData ? (
                 <Chart
                   type="bar"
@@ -181,7 +181,7 @@ export default function StudentAnalytics() {
               )}
             </Card>
 
-            <Card title="📈 Performance Pie Chart">
+            <Card className="bg-emerald-50" title="📈 Performance Pie Chart">
               {performanceData ? (
                 <Chart
                   type="pie"
@@ -197,40 +197,40 @@ export default function StudentAnalytics() {
           </div>
 
           {/* Top Performers Table */}
-          <Card title="🏆 Top 5 Performers">
+          <Card className="bg-emerald-50" title="🏆 Top 5 Performers">
             <div className="overflow-x-auto">
               {topPerformers.length > 0 ? (
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white">
-                      <th className="px-6 py-3 text-left text-sm font-semibold">Rank</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">Student ID</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">Score</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">Percentage</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">Attempts</th>
+                    <tr className="bg-emerald-50 text-gray-900">
+                      <th className="px-4 py-2 text-left text-sm font-semibold">Rank</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold">Student ID</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold">Score</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold">Percentage</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold">Attempts</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {topPerformers.map((performer) => (
                       <tr
                         key={performer.rank}
-                        className="hover:bg-emerald-50 transition-colors group"
+                        className="hover:bg-gray-50 transition-colors"
                       >
-                        <td className="px-6 py-4">
-                          <span className="inline-block w-8 h-8 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-full text-center text-sm font-bold leading-8">
+                        <td className="px-4 py-3">
+                          <span className="inline-block w-8 h-8 bg-emerald-600 text-white rounded-full text-center text-sm font-bold leading-8">
                             {performer.rank}
                           </span>
                         </td>
-                        <td className="px-6 py-4 font-semibold text-gray-900 group-hover:text-emerald-700">
+                        <td className="px-4 py-3 font-semibold text-gray-900">
                           {performer.name}
                         </td>
-                        <td className="px-6 py-4 font-semibold text-gray-900">{performer.score}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3 font-semibold text-gray-900">{performer.score}</td>
+                        <td className="px-4 py-3">
                           <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-semibold">
                             {performer.percentage}%
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-gray-700">{performer.attempts}</td>
+                        <td className="px-4 py-3 text-gray-700">{performer.attempts}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -244,26 +244,26 @@ export default function StudentAnalytics() {
           </Card>
 
           {/* Summary Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-            <Card>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+            <Card className="bg-emerald-50">
               <div className="text-center">
                 <p className="text-gray-600 text-sm font-medium">Total Students</p>
                 <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.totalStudents}</p>
               </div>
             </Card>
-            <Card>
+            <Card className="bg-emerald-50">
               <div className="text-center">
                 <p className="text-gray-600 text-sm font-medium">Avg Score</p>
                 <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.avgScore}</p>
               </div>
             </Card>
-            <Card>
+            <Card className="bg-emerald-50">
               <div className="text-center">
                 <p className="text-gray-600 text-sm font-medium">Pass Rate</p>
                 <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.passRate}%</p>
               </div>
             </Card>
-            <Card>
+            <Card className="bg-emerald-50">
               <div className="text-center">
                 <p className="text-gray-600 text-sm font-medium">Avg Attempts</p>
                 <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.avgAttempts}</p>

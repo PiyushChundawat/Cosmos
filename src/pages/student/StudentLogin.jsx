@@ -45,7 +45,6 @@ export default function StudentLogin() {
         studentCode: formData.studentCode,
       });
 
-      // Store token and user info
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('studentId', response.data.user.id);
       localStorage.setItem('studentName', response.data.user.name);
@@ -67,13 +66,13 @@ export default function StudentLogin() {
   };
 
   const inputClass = (error) =>
-    `w-full px-4 py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-emerald-600 disabled:bg-gray-100 disabled:cursor-not-allowed`;
+    `w-full px-4 py-3 border-2 ${error ? 'border-red-500' : 'border-gray-300'} rounded-xl focus:outline-none focus:border-indigo-600 disabled:bg-gray-100 disabled:cursor-not-allowed transition`;
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-gray-50 rounded-xl p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Student Login</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Student Login</h1>
           <p className="text-gray-600 mt-2">Access your student portal</p>
         </div>
 
@@ -121,15 +120,15 @@ export default function StudentLogin() {
           </div>
 
           {errors.submit && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-600 text-sm font-semibold">⚠️ {errors.submit}</p>
+            <div className="bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-2xl">
+              <p className="text-red-600 text-sm font-semibold">{errors.submit}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-600 text-white font-medium py-3 rounded-lg hover:bg-emerald-700 transition-colors mt-6 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 transition shadow-md mt-6 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
@@ -137,7 +136,7 @@ export default function StudentLogin() {
           <div className="text-center pt-4">
             <p className="text-gray-600">
               Don't have an account?{' '}
-              <Link to="/student/signup" className="text-emerald-600 font-medium hover:text-emerald-700">
+              <Link to="/student/signup" className="text-indigo-600 font-medium hover:text-indigo-700">
                 Sign up
               </Link>
             </p>

@@ -85,10 +85,10 @@ const FacultyDashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 text-lg">Loading dashboard...</p>
+          <div className="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-blue-600 text-lg font-medium">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -96,73 +96,82 @@ const FacultyDashboard = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center max-w-md">
-          <p className="text-red-600 font-semibold text-lg mb-4">⚠️ {error}</p>
-          <button
-            onClick={fetchDashboardData}
-            className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition"
-          >
-            Retry
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6">
+              ⚠️ {error}
+            </div>
+            <button
+              onClick={fetchDashboardData}
+              className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
+            >
+              Retry
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Header */}
-      <div className="bg-gray-50 rounded-xl p-6">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome, {facultyName}</h1>
-        <p className="mt-2 text-gray-600">Manage your tests, questions, and track student performance</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome, {facultyName}</h1>
+          <p className="text-gray-600">Manage your tests, questions, and track student performance</p>
+        </div>
+
+        <div className="space-y-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Total Tests</p>
+                <p className="text-4xl font-bold text-gray-900 mt-2">{stats.countTotal}</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Average Score</p>
+                <p className="text-4xl font-bold text-gray-900 mt-2">{stats.averageTestScore}%</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Upcoming Tests</p>
+                <p className="text-4xl font-bold text-gray-900 mt-2">{stats.upcomingTestCount}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Tests Table */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Tests</h2>
+            {recentTests.length === 0 ? (
+              <div className="text-center py-8 text-gray-600">
+                No recent tests available
+              </div>
+            ) : (
+              <Table columns={recentTestColumns} data={recentTests} />
+            )}
+          </div>
+
+          {/* Upcoming Tests Table */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Upcoming Tests</h2>
+            {upcomingTests.length === 0 ? (
+              <div className="text-center py-8 text-gray-600">
+                No upcoming tests scheduled
+              </div>
+            ) : (
+              <Table columns={upcomingTestColumns} data={upcomingTests} />
+            )}
+          </div>
+        </div>
       </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-gray-50">
-          <div>
-            <p className="text-gray-600 text-sm font-medium">Total Tests</p>
-            <p className="text-4xl font-bold text-gray-900 mt-2">{stats.countTotal}</p>
-          </div>
-        </Card>
-
-        <Card className="bg-gray-50">
-          <div>
-            <p className="text-gray-600 text-sm font-medium">Average Score</p>
-            <p className="text-4xl font-bold text-gray-900 mt-2">{stats.averageTestScore}%</p>
-          </div>
-        </Card>
-
-        <Card className="bg-gray-50">
-          <div>
-            <p className="text-gray-600 text-sm font-medium">Upcoming Tests</p>
-            <p className="text-4xl font-bold text-gray-900 mt-2">{stats.upcomingTestCount}</p>
-          </div>
-        </Card>
-      </div>
-
-      {/* Recent Tests Table */}
-      <Card title="Recent Tests">
-        {recentTests.length === 0 ? (
-          <div className="text-center py-8 text-gray-600">
-            No recent tests available
-          </div>
-        ) : (
-          <Table columns={recentTestColumns} data={recentTests} />
-        )}
-      </Card>
-
-      {/* Upcoming Tests Table */}
-      <Card title="Upcoming Tests">
-        {upcomingTests.length === 0 ? (
-          <div className="text-center py-8 text-gray-600">
-            No upcoming tests scheduled
-          </div>
-        ) : (
-          <Table columns={upcomingTestColumns} data={upcomingTests} />
-        )}
-      </Card>
     </div>
   );
 };

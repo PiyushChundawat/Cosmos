@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// ⚠️ CONFIGURE THIS
 const API_BASE_URL = 'http://localhost:5000/api';
 
 export default function FacultyAnalytics() {
@@ -77,20 +76,20 @@ export default function FacultyAnalytics() {
   const chartData = getPerformanceBandsChart();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b-4 border-emerald-600">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-3xl font-bold text-gray-900">
-            <span className="text-emerald-600">Faculty</span> Analytics
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <header className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 shadow-sm">
+        <div className="max-w-5xl mx-auto px-6 py-4">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            Faculty Analytics
           </h1>
-          <p className="text-gray-600 text-sm mt-1">Subject & performance analysis</p>
+          <p className="text-gray-600 text-sm">Subject & performance analysis</p>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
         {/* Subject Filter */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">🔍 Filter by Subject</h2>
+        <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl shadow-md p-6 hover:shadow-lg transition-all duration-300">
+          <h2 className="text-xl font-bold text-indigo-800 mb-4">Filter by Subject</h2>
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -101,14 +100,14 @@ export default function FacultyAnalytics() {
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="e.g., Mathematics, Physics, Chemistry"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-indigo-600 transition"
               />
             </div>
             <div className="flex items-end">
               <button
                 onClick={handleApplyFilter}
                 disabled={loading}
-                className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-md"
               >
                 {loading ? 'Loading...' : 'Apply Filter'}
               </button>
@@ -118,7 +117,7 @@ export default function FacultyAnalytics() {
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg mb-8">
+          <div className="bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-2xl mb-6">
             {error}
           </div>
         )}
@@ -127,46 +126,38 @@ export default function FacultyAnalytics() {
         {data && (
           <>
             {/* Summary Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <div className="text-center">
-                  <p className="text-gray-600 text-sm font-medium">Average Score</p>
-                  <p className="text-4xl font-bold text-emerald-700 mt-2">
-                    {data.overallStats?.avgScore || 0}
-                  </p>
-                </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-4 text-white shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
+                <p className="text-xs text-purple-100 font-medium">Average Score</p>
+                <p className="text-2xl font-bold mt-2">
+                  {data.overallStats?.avgScore || 0}
+                </p>
               </div>
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <div className="text-center">
-                  <p className="text-gray-600 text-sm font-medium">Avg Percentage</p>
-                  <p className="text-4xl font-bold text-emerald-700 mt-2">
-                    {data.overallStats?.avgPercentage || 0}%
-                  </p>
-                </div>
+              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-4 text-white shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
+                <p className="text-xs text-emerald-100 font-medium">Avg Percentage</p>
+                <p className="text-2xl font-bold mt-2">
+                  {data.overallStats?.avgPercentage || 0}%
+                </p>
               </div>
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <div className="text-center">
-                  <p className="text-gray-600 text-sm font-medium">Total Attempts</p>
-                  <p className="text-4xl font-bold text-emerald-700 mt-2">
-                    {data.overallStats?.totalAttempts || 0}
-                  </p>
-                </div>
+              <div className="bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-4 text-white shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
+                <p className="text-xs text-orange-100 font-medium">Total Attempts</p>
+                <p className="text-2xl font-bold mt-2">
+                  {data.overallStats?.totalAttempts || 0}
+                </p>
               </div>
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <div className="text-center">
-                  <p className="text-gray-600 text-sm font-medium">Total Students</p>
-                  <p className="text-4xl font-bold text-emerald-700 mt-2">
-                    {data.overallStats?.totalStudents || 0}
-                  </p>
-                </div>
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 text-white shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
+                <p className="text-xs text-blue-100 font-medium">Total Students</p>
+                <p className="text-2xl font-bold mt-2">
+                  {data.overallStats?.totalStudents || 0}
+                </p>
               </div>
             </div>
 
             {/* Performance Distribution */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               {/* Performance Bands Chart */}
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">📊 Performance Distribution</h2>
+              <div className="bg-emerald-50 rounded-lg shadow-sm p-3 hover:shadow-md transition-shadow duration-200">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">📊 Performance Distribution</h2>
                 {chartData && (
                   <div className="space-y-4">
                     {chartData.labels.map((label, index) => (
@@ -193,14 +184,14 @@ export default function FacultyAnalytics() {
               </div>
 
               {/* Top Performers */}
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">🏆 Top 5 Performers</h2>
+              <div className="bg-emerald-50 rounded-lg shadow-sm p-3 hover:shadow-md transition-shadow duration-200">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">🏆 Top 5 Performers</h2>
                 {data.topPerformers && data.topPerformers.length > 0 ? (
                   <div className="space-y-3">
                     {data.topPerformers.map((student, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-lg"
+                        className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg"
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
@@ -229,16 +220,16 @@ export default function FacultyAnalytics() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-8">No performance data available</p>
+                  <p className="text-gray-500 text-center py-3">No performance data available</p>
                 )}
               </div>
             </div>
 
             {/* Performance Bands Breakdown */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">📋 Performance Bands Breakdown</h2>
+            <div className="bg-emerald-50 rounded-lg shadow-sm p-3 hover:shadow-md transition-shadow duration-200">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">📋 Performance Bands Breakdown</h2>
               
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Below 40% */}
                 {data.performanceBands?.below_40 && data.performanceBands.below_40.length > 0 && (
                   <div>
@@ -248,7 +239,7 @@ export default function FacultyAnalytics() {
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {data.performanceBands.below_40.slice(0, 12).map((student, idx) => (
-                        <div key={idx} className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg">
                           <p className="text-xs text-gray-600">Student ID</p>
                           <p className="font-semibold text-gray-900 truncate">
                             {student.studentId?.toString().slice(-8)}
@@ -271,7 +262,7 @@ export default function FacultyAnalytics() {
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {data.performanceBands.between_40_70.slice(0, 12).map((student, idx) => (
-                        <div key={idx} className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg">
                           <p className="text-xs text-gray-600">Student ID</p>
                           <p className="font-semibold text-gray-900 truncate">
                             {student.studentId?.toString().slice(-8)}
@@ -294,7 +285,7 @@ export default function FacultyAnalytics() {
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {data.performanceBands.above_70.slice(0, 12).map((student, idx) => (
-                        <div key={idx} className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg">
                           <p className="text-xs text-gray-600">Student ID</p>
                           <p className="font-semibold text-gray-900 truncate">
                             {student.studentId?.toString().slice(-8)}
@@ -314,7 +305,7 @@ export default function FacultyAnalytics() {
 
         {/* Empty State */}
         {!data && !loading && (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
+          <div className="bg-emerald-50 rounded-lg shadow-sm p-6 text-center hover:shadow-md transition-shadow duration-200">
             <div className="text-6xl mb-4">📊</div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">No Data Yet</h3>
             <p className="text-gray-600">Enter a subject name and click "Apply Filter" to view analytics</p>

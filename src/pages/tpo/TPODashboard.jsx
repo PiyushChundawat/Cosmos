@@ -12,18 +12,15 @@ export default function TPODashboard() {
   const userName = localStorage.getItem('tpo_user') || 'User';
   const [activeTab, setActiveTab] = useState('overview');
 
-  // State for student analytics
   const [studentPerformance, setStudentPerformance] = useState({ below_40: [], between_40_70: [], above_70: [] });
   const [topStudents, setTopStudents] = useState([]);
   const [studentLoading, setStudentLoading] = useState(false);
   const [studentError, setStudentError] = useState(null);
 
-  // State for faculty analytics
   const [facultyAnalytics, setFacultyAnalytics] = useState(null);
   const [facultyLoading, setFacultyLoading] = useState(false);
   const [facultyError, setFacultyError] = useState(null);
 
-  // Fetch student analytics
   const fetchStudentAnalytics = async () => {
     try {
       setStudentLoading(true);
@@ -101,23 +98,23 @@ export default function TPODashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-white">
       <Sidebar />
 
       <div className="flex-1">
-        <header className="bg-white shadow-sm border-b-4 border-[#0C6B2F] sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">TPO Dashboard</h1>
-              <p className="text-gray-600 text-sm mt-1">{collegeName} • Welcome, {userName}</p>
+              <p className="text-gray-600 mt-1">{collegeName} • Welcome, {userName}</p>
             </div>
             <Button variant="danger" onClick={handleLogout}>Logout</Button>
           </div>
         </header>
 
-        <main className="max-w-7xl mx-auto px-6 py-8">
+        <main className="max-w-7xl mx-auto px-6 py-8 space-y-4">
           {/* Tab Navigation */}
-          <div className="flex gap-4 mb-8 border-b border-gray-300">
+          <div className="flex gap-4 border-b border-gray-300">
             <button
               onClick={() => setActiveTab('overview')}
               className={`px-6 py-3 font-semibold ${

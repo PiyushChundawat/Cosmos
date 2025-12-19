@@ -164,186 +164,192 @@ const ManageQuestions = () => {
 
   if (loading && questions.length === 0) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 text-lg">Loading questions...</p>
+          <div className="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-blue-600 text-lg font-medium">Loading questions...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manage Questions</h1>
-          <p className="text-gray-600 mt-1">Create and manage test questions</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Manage Questions</h1>
+              <p className="text-gray-600 mt-2">Create and manage test questions</p>
+            </div>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium shadow-md"
+            >
+              Create New Question
+            </button>
+          </div>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+
+        <div className="space-y-6">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl">
+              ⚠️ {error}
+              <button
+                onClick={fetchQuestions}
+                className="block mt-2 text-red-600 hover:text-red-700 underline font-medium"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            {questions.length === 0 ? (
+              <div className="text-center py-12 text-gray-600">
+                <p className="text-lg mb-3">No questions created yet</p>
+                <p className="text-sm">Click "Create New Question" to get started</p>
+              </div>
+            ) : (
+              <Table columns={columns} data={questions} />
+            )}
+          </div>
+        </div>
+
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            resetForm();
+          }}
+          title="Create New Question"
+          size="lg"
         >
-          Create New Question
-        </button>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Question Text <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                name="questionText"
+                value={formData.questionText}
+                onChange={handleChange}
+                placeholder="Enter your question here..."
+                required
+                rows="3"
+                disabled={loading}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-colors"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputField
+                label="Option 1"
+                type="text"
+                name="option1"
+                value={formData.option1}
+                onChange={handleChange}
+                placeholder="First option"
+                disabled={loading}
+                required
+              />
+              <InputField
+                label="Option 2"
+                type="text"
+                name="option2"
+                value={formData.option2}
+                onChange={handleChange}
+                placeholder="Second option"
+                disabled={loading}
+                required
+              />
+              <InputField
+                label="Option 3"
+                type="text"
+                name="option3"
+                value={formData.option3}
+                onChange={handleChange}
+                placeholder="Third option"
+                disabled={loading}
+                required
+              />
+              <InputField
+                label="Option 4"
+                type="text"
+                name="option4"
+                value={formData.option4}
+                onChange={handleChange}
+                placeholder="Fourth option"
+                disabled={loading}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Correct Answer <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="correctAnswer"
+                value={formData.correctAnswer}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-colors"
+              >
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+                <option value="3">Option 3</option>
+                <option value="4">Option 4</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputField
+                label="Subject"
+                type="text"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                placeholder="e.g., Data Structures"
+                disabled={loading}
+                required
+              />
+              <InputField
+                label="Topic"
+                type="text"
+                name="topic"
+                value={formData.topic}
+                onChange={handleChange}
+                placeholder="e.g., Trees"
+                disabled={loading}
+                required
+              />
+            </div>
+
+            <div className="flex gap-4 pt-6">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+              >
+                {loading ? 'Creating...' : 'Create Question'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsModalOpen(false);
+                  resetForm();
+                }}
+                disabled={loading}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-xl font-medium transition-colors disabled:opacity-50 shadow-md"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </Modal>
       </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-600 font-semibold">⚠️ {error}</p>
-          <button
-            onClick={fetchQuestions}
-            className="mt-2 text-red-600 underline hover:text-red-800"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      <Card>
-        {questions.length === 0 ? (
-          <div className="text-center py-12 text-gray-600">
-            <p className="text-lg mb-2">No questions created yet</p>
-            <p className="text-sm">Click "Create New Question" to get started</p>
-          </div>
-        ) : (
-          <Table columns={columns} data={questions} />
-        )}
-      </Card>
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          resetForm();
-        }}
-        title="Create New Question"
-        size="lg"
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Question Text <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              name="questionText"
-              value={formData.questionText}
-              onChange={handleChange}
-              placeholder="Enter your question here..."
-              required
-              rows="3"
-              disabled={loading}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputField
-              label="Option 1"
-              type="text"
-              name="option1"
-              value={formData.option1}
-              onChange={handleChange}
-              placeholder="First option"
-              disabled={loading}
-              required
-            />
-            <InputField
-              label="Option 2"
-              type="text"
-              name="option2"
-              value={formData.option2}
-              onChange={handleChange}
-              placeholder="Second option"
-              disabled={loading}
-              required
-            />
-            <InputField
-              label="Option 3"
-              type="text"
-              name="option3"
-              value={formData.option3}
-              onChange={handleChange}
-              placeholder="Third option"
-              disabled={loading}
-              required
-            />
-            <InputField
-              label="Option 4"
-              type="text"
-              name="option4"
-              value={formData.option4}
-              onChange={handleChange}
-              placeholder="Fourth option"
-              disabled={loading}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Correct Answer <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="correctAnswer"
-              value={formData.correctAnswer}
-              onChange={handleChange}
-              required
-              disabled={loading}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-100"
-            >
-              <option value="1">Option 1</option>
-              <option value="2">Option 2</option>
-              <option value="3">Option 3</option>
-              <option value="4">Option 4</option>
-            </select>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputField
-              label="Subject"
-              type="text"
-              name="subject"
-              value={formData.subject}
-              onChange={handleChange}
-              placeholder="e.g., Data Structures"
-              disabled={loading}
-              required
-            />
-            <InputField
-              label="Topic"
-              type="text"
-              name="topic"
-              value={formData.topic}
-              onChange={handleChange}
-              placeholder="e.g., Trees"
-              disabled={loading}
-              required
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Creating...' : 'Create Question'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsModalOpen(false);
-                resetForm();
-              }}
-              disabled={loading}
-              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 };

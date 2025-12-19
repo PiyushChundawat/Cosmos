@@ -25,10 +25,10 @@ export default function Input({
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        className={`w-full px-4 py-3 rounded-lg border-2 transition-all duration-300 focus:outline-none ${
+        className={`w-full px-4 py-3 rounded-xl border-2 transition focus:outline-none ${
           error
             ? 'border-red-500 bg-red-50 focus:border-red-600'
-            : 'border-emerald-200 focus:border-emerald-500 hover:border-emerald-300'
+            : 'border-gray-300 focus:border-indigo-600'
         } ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
       />
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}

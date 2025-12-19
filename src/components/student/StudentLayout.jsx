@@ -22,7 +22,7 @@ export default function StudentLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
 
       <div className="lg:hidden bg-emerald-700 text-white p-4 flex items-center justify-between sticky top-0 z-50">
         <h1 className="text-xl font-bold">COSMOS</h1>

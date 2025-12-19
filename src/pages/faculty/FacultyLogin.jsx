@@ -49,17 +49,17 @@ export default function FacultyLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Faculty Login</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Faculty Login</h1>
           <p className="text-gray-600">Access your faculty portal</p>
         </div>
 
-        <div className="bg-gray-50 rounded-xl p-8 border border-gray-200">
+        <div className="bg-white border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              ⚠️ {error}
+            <div className="mb-4 p-3 bg-red-50 border-2 border-red-200 text-red-700 rounded-2xl text-sm">
+              {error}
             </div>
           )}
 
@@ -100,7 +100,7 @@ export default function FacultyLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-6 rounded-lg font-medium disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-xl font-medium disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-md"
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>
@@ -109,7 +109,7 @@ export default function FacultyLogin() {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Don't have an account?
-              <Link to="/faculty/signup" className="text-emerald-600 ml-1 font-medium hover:text-emerald-700">
+              <Link to="/faculty/signup" className="text-indigo-600 ml-1 font-medium hover:text-indigo-700">
                 Sign up
               </Link>
             </p>

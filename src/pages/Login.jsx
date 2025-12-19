@@ -17,7 +17,7 @@ function Login() {
       ...prev,
       [name]: value
     }));
-    setError(''); // Clear error when user types
+    setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -31,11 +31,9 @@ function Login() {
         password: formData.password
       });
 
-      // Store token and user info
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
-      // Navigate to dashboard
       navigate('/dashboard');
     } catch (err) {
       console.error('Login failed:', err);
@@ -46,21 +44,21 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
+        <div className="bg-white border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
           
-          <div className="bg-gray-900 p-8 text-center">
-            <h1 className="text-3xl font-bold text-white mb-1">Admin Login</h1>
-            <p className="text-gray-300 text-sm">SuperAdmin Access Portal</p>
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-1">Admin Login</h1>
+            <p className="text-gray-600 text-sm">SuperAdmin Access Portal</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-600 text-sm font-semibold">⚠️ {error}</p>
+              <div className="bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-2xl">
+                <p className="text-red-600 text-sm font-semibold">{error}</p>
               </div>
             )}
 
@@ -76,7 +74,7 @@ function Login() {
                 placeholder="superadmin@cosmos.com"
                 required
                 disabled={loading}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-gray-600 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-indigo-600 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed transition"
               />
             </div>
 
@@ -92,21 +90,18 @@ function Login() {
                 placeholder="••••••••"
                 required
                 disabled={loading}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-gray-600 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-indigo-600 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed transition"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-black active:scale-95 transition disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-md"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
-                  <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
+                  <div className="animate-spin h-5 w-5 border-4 border-white border-t-transparent rounded-full mr-2"></div>
                   Logging in...
                 </span>
               ) : (
@@ -122,7 +117,7 @@ function Login() {
           </form>
         </div>
 
-        <div className="mt-8 text-center text-gray-500 text-sm">
+        <div className="mt-8 text-center text-indigo-600 text-sm">
           <p>© 2025 Admin Dashboard. All rights reserved.</p>
         </div>
       </div>
