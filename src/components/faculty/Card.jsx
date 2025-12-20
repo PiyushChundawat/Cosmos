@@ -8,7 +8,7 @@ const Card = ({ children, title, icon, className = '', onClick }) => {
     >
       {title && (
         <div className="flex items-center gap-3 mb-3">
-          {icon && <span className="text-emerald-600">{icon}</span>}
+          {icon && <span className="text-indigo-600">{icon}</span>}
           <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
         </div>
       )}
@@ -18,3 +18,4 @@ const Card = ({ children, title, icon, className = '', onClick }) => {
 };
 
 export default Card;
+
