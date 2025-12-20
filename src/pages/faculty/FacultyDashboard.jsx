@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../components/faculty/Card';
 import Table from '../../components/faculty/Table';
+import HomeButton from '../../components/HomeButton';
 import api from '../../api/axios';
 
 const FacultyDashboard = () => {
@@ -85,10 +86,10 @@ const FacultyDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-blue-600 text-lg font-medium">Loading dashboard...</p>
+          <p className="text-gray-600 text-lg">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -96,15 +97,13 @@ const FacultyDashboard = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
-            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6">
-              ⚠️ {error}
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="max-w-5xl mx-auto px-6 py-10">
+          <div className="bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-2xl">
+            <p className="font-semibold mb-2">{error}</p>
             <button
               onClick={fetchDashboardData}
-              className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
+              className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
             >
               Retry
             </button>
@@ -115,63 +114,151 @@ const FacultyDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome, {facultyName}</h1>
-          <p className="text-gray-600">Manage your tests, questions, and track student performance</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
 
-        <div className="space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Total Tests</p>
-                <p className="text-4xl font-bold text-gray-900 mt-2">{stats.countTotal}</p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Average Score</p>
-                <p className="text-4xl font-bold text-gray-900 mt-2">{stats.averageTestScore}%</p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Upcoming Tests</p>
-                <p className="text-4xl font-bold text-gray-900 mt-2">{stats.upcomingTestCount}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Tests Table */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Tests</h2>
-            {recentTests.length === 0 ? (
-              <div className="text-center py-8 text-gray-600">
-                No recent tests available
-              </div>
-            ) : (
-              <Table columns={recentTestColumns} data={recentTests} />
-            )}
-          </div>
-
-          {/* Upcoming Tests Table */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Upcoming Tests</h2>
-            {upcomingTests.length === 0 ? (
-              <div className="text-center py-8 text-gray-600">
-                No upcoming tests scheduled
-              </div>
-            ) : (
-              <Table columns={upcomingTestColumns} data={upcomingTests} />
-            )}
-          </div>
-        </div>
+      <div className="fixed top-4 right-4 z-50">
+        <HomeButton />
       </div>
+
+      <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+
+        {/* STATS (COLORFUL) */}
+        <section>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              { label: "Total Tests", value: stats.countTotal, gradient: "from-purple-500 to-pink-600", textColor: "text-purple-100" },
+              { label: "Average Score", value: `${stats.averageTestScore}%`, gradient: "from-emerald-500 to-teal-600", textColor: "text-emerald-100" },
+              { label: "Upcoming Tests", value: stats.upcomingTestCount, gradient: "from-orange-500 to-red-600", textColor: "text-orange-100" },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className={`bg-gradient-to-br ${item.gradient} rounded-2xl p-4 text-white shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 cursor-pointer`}
+              >
+                <p className={`text-xs ${item.textColor} font-medium`}>{item.label}</p>
+                <p className="text-2xl font-bold mt-2">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* RECENT TESTS (BLUE) */}
+        <section className="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md">
+          <h2 className="text-xl font-bold text-blue-600 mb-4">
+            Recent Tests
+          </h2>
+
+          {recentTests.length === 0 ? (
+            <div className="p-6 text-center">
+              <p className="text-gray-500 mb-4">No recent tests available. Create your first test!</p>
+              <button
+                onClick={() => navigate('/faculty/tests')}
+                className="px-6 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition font-semibold"
+              >
+                Create Test
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentTests.map((test, i) => (
+                <div
+                  key={i}
+                  className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 hover:shadow-md transition-all duration-300 cursor-pointer"
+                  onClick={() => navigate(`/faculty/tests/${test.id}/analytics`)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <span className="font-semibold text-gray-800 text-base">{test.title}</span>
+                      <p className="text-xs text-gray-500 mt-1">{test.date}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-blue-600 text-lg">{test.attempts}</span>
+                      <p className="text-xs text-gray-600">attempts</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Avg Score: {Math.round(test.avgScore)}%</span>
+                    <div className="h-2 bg-gray-200 rounded-full w-24 overflow-hidden">
+                      <div
+                        className="h-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500"
+                        style={{ width: `${test.avgScore}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* UPCOMING TESTS (EMERALD) */}
+        <section className="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md">
+          <h2 className="text-xl font-bold text-emerald-600 mb-4">
+            Upcoming Tests
+          </h2>
+
+          {upcomingTests.length === 0 ? (
+            <div className="p-6 text-center">
+              <p className="text-gray-500 mb-4">No upcoming tests scheduled.</p>
+              <button
+                onClick={() => navigate('/faculty/tests')}
+                className="px-6 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition font-semibold"
+              >
+                Schedule Test
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {upcomingTests.map((test, i) => (
+                <div
+                  key={i}
+                  className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 hover:shadow-md transition-all duration-300 cursor-pointer"
+                  onClick={() => navigate('/faculty/tests')}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-semibold text-gray-800 text-base">{test.title}</span>
+                      <p className="text-xs text-gray-500 mt-1">{test.startDate}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-emerald-600 text-lg">{test.duration}</span>
+                      <p className="text-xs text-gray-600">minutes</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* QUICK ACTIONS (VIOLET) */}
+        <section>
+          <h2 className="text-xl font-bold text-violet-600 mb-4">
+            Quick Actions
+          </h2>
+          <div className="grid md:grid-cols-3 gap-3">
+            {[
+              { title: "Create Test", desc: "Design new assessments", path: "/faculty/tests", color: "violet" },
+              { title: "Manage Questions", desc: "Add and organize questions", path: "/faculty/questions", color: "violet" },
+              { title: "View Analytics", desc: "Track student performance", path: "/faculty/analytics", color: "violet" }
+            ].map((item, i) => (
+              <div
+                key={i}
+                onClick={() => navigate(item.path)}
+                className="bg-white border-2 border-violet-200 rounded-2xl p-4 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              >
+                <h3 className="font-bold text-gray-800 text-base mb-1">
+                  {item.title}
+                </h3>
+                <p className="text-xs text-gray-600 mb-3">{item.desc}</p>
+                <button className="w-full bg-violet-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-violet-700 transition shadow-md">
+                  Open
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+      </main>
     </div>
   );
 };

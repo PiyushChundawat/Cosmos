@@ -22,26 +22,30 @@ export default function StudentSidebar() {
   };
 
   return (
-    <aside className="w-64 bg-emerald-700 text-white min-h-screen border-r border-emerald-800 fixed left-0 top-0 z-40">
-      <div className="p-6 border-b border-emerald-800">
-        <h1 className="text-2xl font-bold">COSMOS</h1>
-        <p className="text-emerald-200 text-sm mt-1">Placement Portal</p>
+    <aside className="w-64 bg-gradient-to-b from-blue-600 to-blue-700 text-white min-h-screen border-r border-blue-800 fixed left-0 top-0 z-40 shadow-xl">
+
+      {/* HEADER (ONLY COSMOS TEXT) */}
+      <div className="p-6 border-b border-blue-500/30">
+        <h1 className="text-2xl font-bold tracking-wide">COSMOS</h1>
+        <p className="text-blue-100 text-sm mt-1">Placement Portal</p>
       </div>
 
-      <div className="p-6 border-b border-emerald-800">
-        <p className="text-emerald-100 text-sm">Welcome,</p>
+      {/* Welcome Section */}
+      <div className="p-6 border-b border-blue-500/30 bg-white/5">
+        <p className="text-blue-100 text-sm">Welcome,</p>
         <p className="text-white font-semibold text-lg">{studentName}</p>
       </div>
 
+      {/* Navigation Menu */}
       <nav className="p-4 space-y-2">
         {menuItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
-            className={`flex items-center px-4 py-3 rounded-lg font-medium transition ${
+            className={`flex items-center px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
               location.pathname === item.path
-                ? 'bg-emerald-600 text-white'
-                : 'text-emerald-100 hover:bg-emerald-600'
+                ? 'bg-white text-blue-600 shadow-lg'
+                : 'text-blue-50 hover:bg-white/10 hover:translate-x-1'
             }`}
           >
             {item.name}
@@ -49,10 +53,11 @@ export default function StudentSidebar() {
         ))}
       </nav>
 
+      {/* Logout Button */}
       <div className="absolute bottom-6 left-6 right-6">
         <button
           onClick={handleLogout}
-          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg"
+          className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
         >
           Logout
         </button>

@@ -1,8 +1,10 @@
+// pages/tpo/TPOSignup.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
+import HomeButton from '../../components/HomeButton';
 import api from '../../api/axios';
 
 export default function TPOSignup() {
@@ -14,7 +16,7 @@ export default function TPOSignup() {
     tpoEmail: '',
     phone: '',
     password: '',
-    amount: 1000,
+    amount: 20000,
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -29,13 +31,10 @@ export default function TPOSignup() {
   const validateForm = () => {
     const errs = {};
     
-    // College Details Validation
     if (!form.collegeName.trim()) errs.collegeName = 'College name required';
     if (!form.collegeEmail.trim() || !/\.ac\.in|\.edu/.test(form.collegeEmail))
       errs.collegeEmail = 'Valid college email domain required (e.g., college.ac.in)';
     if (!form.address.trim()) errs.address = 'Address required';
-    
-    // TPO Details Validation
     if (!form.tpoName.trim()) errs.tpoName = 'Full name required';
     if (!form.tpoEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.tpoEmail))
       errs.tpoEmail = 'Valid email required';
@@ -47,53 +46,131 @@ export default function TPOSignup() {
     return errs;
   };
 
+  // Load Razorpay script
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validateForm();
     if (Object.keys(errs).length) return setErrors(errs);
 
     setLoading(true);
+
     try {
-      const response = await api.post('/auth/tpo/signup', {
-          collegeName: form.collegeName,        // Changed
-          collegeEmailDomain: form.collegeEmail, // Changed
-          address: form.address,
-          tpoName: form.tpoName,
-          tpoEmail: form.tpoEmail,
-          tpoPhone: form.phone,
-          password: form.password,
-          amount: form.amount,                   // Changed
+      // Step 1: Load Razorpay script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        setErrors({ submit: 'Failed to load payment gateway. Check your internet connection.' });
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Create payment order
+      const orderResponse = await api.post('/auth/tpo/create-payment-order', {
+        amount: form.amount,
       });
 
-      // Set codes from backend response
-      setCodes({
-        studentCode: response.data.studentCode || response.data.codes?.studentCode,
-        facultyCode: response.data.facultyCode || response.data.codes?.facultyCode,
+      if (!orderResponse.data.success) {
+        throw new Error('Failed to create payment order');
+      }
+
+      const { order, key_id } = orderResponse.data;
+
+      // Step 3: Open Razorpay checkout
+      const options = {
+        key: key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'College Placement System',
+        description: 'TPO Registration Payment',
+        order_id: order.id,
+        handler: async function (response) {
+          // Step 4: After successful payment, complete signup
+          try {
+            const signupResponse = await api.post('/auth/tpo/signup', {
+              collegeName: form.collegeName,
+              collegeEmailDomain: form.collegeEmail,
+              address: form.address,
+              tpoName: form.tpoName,
+              tpoEmail: form.tpoEmail,
+              tpoPhone: form.phone,
+              password: form.password,
+              amount: form.amount,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            // Set codes from backend response
+            setCodes({
+              studentCode: signupResponse.data.studentCode,
+              facultyCode: signupResponse.data.facultyCode,
+            });
+
+            // Store user info in localStorage
+            localStorage.setItem('token', signupResponse.data.token);
+            localStorage.setItem('tpo_token', signupResponse.data.token);
+            localStorage.setItem('tpo_college', form.collegeName);
+            localStorage.setItem('tpo_user', form.tpoName);
+            localStorage.setItem('tpo_email', form.tpoEmail);
+
+            setLoading(false);
+          } catch (error) {
+            console.error('Signup error:', error);
+            setErrors({ 
+              submit: error.response?.data?.message || 'Signup failed after payment. Please contact support.' 
+            });
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: form.tpoName,
+          email: form.tpoEmail,
+          contact: form.phone,
+        },
+        theme: {
+          color: '#10b981', // emerald-600
+        },
+        modal: {
+          ondismiss: function () {
+            setLoading(false);
+            setErrors({ submit: 'Payment cancelled. Please try again.' });
+          },
+        },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      
+      paymentObject.on('payment.failed', function (response) {
+        setErrors({ submit: `Payment failed: ${response.error.description}` });
+        setLoading(false);
       });
 
-      // Store user info in localStorage for dashboard
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('tpo_token', response.data.token);
-      localStorage.setItem('tpo_college', form.collegeName);
-      localStorage.setItem('tpo_user', form.tpoName);
-      localStorage.setItem('tpo_email', form.tpoEmail);
+      paymentObject.open();
 
     } catch (error) {
-      console.error('Signup error:', error);
+      console.error('Error:', error);
       setErrors({ 
-        submit: error.response?.data?.message || 'Signup failed. Please try again.' 
+        submit: error.response?.data?.message || 'An error occurred. Please try again.' 
       });
-    } finally {
       setLoading(false);
     }
   };
 
-  // Success Screen
+  // Success Screen (unchanged)
   if (codes) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          <Card className="text-center">
+          <Card className="text-center border-2 border-emerald-300">
             <div className="text-6xl mb-4">✅</div>
             <h2 className="text-3xl font-bold text-emerald-700 mb-2">Signup Successful!</h2>
             <p className="text-gray-600 mb-8">Your college has been registered</p>
@@ -126,14 +203,6 @@ export default function TPOSignup() {
               >
                 Go to Dashboard →
               </Button>
-              <Button 
-                variant="secondary" 
-                size="lg" 
-                onClick={() => navigate('/tpo/login', { replace: true })}
-                className="w-full"
-              >
-                Login with Your Email
-              </Button>
             </div>
           </Card>
         </div>
@@ -141,11 +210,10 @@ export default function TPOSignup() {
     );
   }
 
-  // Signup Form Screen
+  // Signup Form (rest remains the same, just showing the submit button section)
   return (
-    <div className="min-h-screen bg-white py-8 px-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 py-12 px-6">
+      <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             <span className="text-emerald-600">TPO</span> College Signup
@@ -153,11 +221,14 @@ export default function TPOSignup() {
           <p className="text-gray-600">Register your college and start managing placements</p>
         </div>
 
-        {/* Main Form Card */}
-        <div className="bg-gray-50 rounded-lg shadow-sm hover:shadow-md p-3">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">College & TPO Registration</h2>
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-emerald-100">
+          <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-8">
+            <h2 className="text-2xl font-bold text-white">College & TPO Registration</h2>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="p-8 space-y-8">
+            {/* All your existing form fields here... */}
+            
             {/* College Details Section */}
             <div className="border-b-2 border-gray-200 pb-8">
               <div className="flex items-center gap-3 mb-6">
@@ -246,22 +317,23 @@ export default function TPOSignup() {
               </div>
             </div>
 
-            {/* Subscription Section */}
+            {/* Payment & Security Section */}
             <div className="border-b-2 border-gray-200 pb-8">
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-2xl">💳</span>
-                <h3 className="text-xl font-bold text-gray-900">Subscription & Security</h3>
+                <h3 className="text-xl font-bold text-gray-900">Payment & Security</h3>
               </div>
 
               <div className="space-y-4">
                 <div className="bg-emerald-50 p-5 rounded-lg border-2 border-emerald-200">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Subscription Amount
+                    Registration Payment
                   </label>
                   <div className="text-3xl font-bold text-emerald-700">
-                    ₹{form.amount}
+                    ₹{form.amount.toLocaleString()}
                   </div>
                   <p className="text-gray-600 text-xs mt-2">One-time payment for annual subscription</p>
+                  <p className="text-emerald-600 text-xs mt-1 font-semibold">🔒 Secure payment via Razorpay</p>
                 </div>
 
                 <Input
@@ -293,7 +365,7 @@ export default function TPOSignup() {
               className="w-full"
               type="submit"
             >
-              {loading ? 'Creating Account...' : 'Submit & Register'}
+              {loading ? 'Processing Payment...' : 'Proceed to Payment →'}
             </Button>
 
             {/* Login Link */}
@@ -319,9 +391,9 @@ export default function TPOSignup() {
             <p className="text-gray-600 text-sm">Provide your college and TPO information</p>
           </Card>
           <Card className="text-center">
-            <div className="text-4xl mb-3">✔️</div>
-            <h4 className="font-bold text-gray-900 mb-2">Verify</h4>
-            <p className="text-gray-600 text-sm">Submit your registration form</p>
+            <div className="text-4xl mb-3">💳</div>
+            <h4 className="font-bold text-gray-900 mb-2">Pay Securely</h4>
+            <p className="text-gray-600 text-sm">Complete payment via Razorpay</p>
           </Card>
           <Card className="text-center">
             <div className="text-4xl mb-3">🎉</div>

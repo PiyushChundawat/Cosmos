@@ -4,6 +4,7 @@ import Card from '../components/Card';
 import Chart from '../components/Chart';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import HomeButton from '../components/HomeButton';
 import { studentAnalyticsAPI } from '../services/api';
 
 export default function StudentAnalytics() {
@@ -125,48 +126,57 @@ export default function StudentAnalytics() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
 
-      <div className="flex-1">
-        <header className="bg-white shadow-sm sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 py-3">
-            <h1 className="text-3xl font-bold text-gray-900">
-              <span className="text-emerald-600">Student</span> Analytics
-            </h1>
-            <p className="text-gray-600 text-sm mt-1">Performance insights & trends</p>
-          </div>
-        </header>
+      <div className="fixed top-4 right-4 z-50">
+        <HomeButton />
+      </div>
 
-        <main className="max-w-7xl mx-auto px-4 py-6">
-          {/* Filters */}
-          <Card className="mb-6 bg-emerald-50" title="📋 Filters">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input
-                label="Test ID"
+      <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+        {/* FILTERS (INDIGO) */}
+        <section className="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md">
+          <h2 className="text-xl font-bold text-indigo-600 mb-4">📋 Filters</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Test ID</label>
+              <input
+                type="text"
                 name="testId"
                 value={filters.testId}
                 onChange={handleFilterChange}
                 placeholder="Enter test ID"
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-indigo-600 transition"
               />
-              <Input
-                label="Subject"
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+              <input
+                type="text"
                 name="subject"
                 value={filters.subject}
                 onChange={handleFilterChange}
                 placeholder="Enter subject"
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-indigo-600 transition"
               />
-              <div className="flex items-end">
-                <Button onClick={fetchData} loading={loading} className="w-full">
-                  Apply Filters
-                </Button>
-              </div>
             </div>
-          </Card>
+            <div className="flex items-end">
+              <button
+                onClick={fetchData}
+                disabled={loading}
+                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-md font-medium"
+              >
+                {loading ? 'Loading...' : 'Apply Filters'}
+              </button>
+            </div>
+          </div>
+        </section>
 
-          {/* Charts Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-            <Card className="bg-emerald-50" title="📊 Performance Distribution">
+        {/* CHARTS (EMERALD) */}
+        <section>
+          <h2 className="text-xl font-bold text-emerald-600 mb-4">📊 Performance Analytics</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300">
+              <h3 className="font-bold text-emerald-800 text-base mb-4">Performance Distribution</h3>
               {performanceData ? (
                 <Chart
                   type="bar"
@@ -179,9 +189,10 @@ export default function StudentAnalytics() {
                   {loading ? 'Loading...' : 'No data available'}
                 </div>
               )}
-            </Card>
+            </div>
 
-            <Card className="bg-emerald-50" title="📈 Performance Pie Chart">
+            <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300">
+              <h3 className="font-bold text-emerald-800 text-base mb-4">Performance Pie Chart</h3>
               {performanceData ? (
                 <Chart
                   type="pie"
@@ -193,85 +204,80 @@ export default function StudentAnalytics() {
                   {loading ? 'Loading...' : 'No data available'}
                 </div>
               )}
-            </Card>
-          </div>
-
-          {/* Top Performers Table */}
-          <Card className="bg-emerald-50" title="🏆 Top 5 Performers">
-            <div className="overflow-x-auto">
-              {topPerformers.length > 0 ? (
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-emerald-50 text-gray-900">
-                      <th className="px-4 py-2 text-left text-sm font-semibold">Rank</th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold">Student ID</th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold">Score</th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold">Percentage</th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold">Attempts</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {topPerformers.map((performer) => (
-                      <tr
-                        key={performer.rank}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-4 py-3">
-                          <span className="inline-block w-8 h-8 bg-emerald-600 text-white rounded-full text-center text-sm font-bold leading-8">
-                            {performer.rank}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 font-semibold text-gray-900">
-                          {performer.name}
-                        </td>
-                        <td className="px-4 py-3 font-semibold text-gray-900">{performer.score}</td>
-                        <td className="px-4 py-3">
-                          <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-semibold">
-                            {performer.percentage}%
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-gray-700">{performer.attempts}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="flex items-center justify-center h-32 text-gray-500">
-                  {loading ? 'Loading...' : 'No top performers data available'}
-                </div>
-              )}
             </div>
-          </Card>
-
-          {/* Summary Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-            <Card className="bg-emerald-50">
-              <div className="text-center">
-                <p className="text-gray-600 text-sm font-medium">Total Students</p>
-                <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.totalStudents}</p>
-              </div>
-            </Card>
-            <Card className="bg-emerald-50">
-              <div className="text-center">
-                <p className="text-gray-600 text-sm font-medium">Avg Score</p>
-                <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.avgScore}</p>
-              </div>
-            </Card>
-            <Card className="bg-emerald-50">
-              <div className="text-center">
-                <p className="text-gray-600 text-sm font-medium">Pass Rate</p>
-                <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.passRate}%</p>
-              </div>
-            </Card>
-            <Card className="bg-emerald-50">
-              <div className="text-center">
-                <p className="text-gray-600 text-sm font-medium">Avg Attempts</p>
-                <p className="text-4xl font-bold text-emerald-700 mt-2">{stats.avgAttempts}</p>
-              </div>
-            </Card>
           </div>
-        </main>
-      </div>
+        </section>
+
+        {/* TOP PERFORMERS (BLUE) */}
+        <section className="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md">
+          <h2 className="text-xl font-bold text-blue-600 mb-4">🏆 Top 5 Performers</h2>
+          <div className="overflow-x-auto">
+            {topPerformers.length > 0 ? (
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-blue-50 text-gray-900">
+                    <th className="px-4 py-2 text-left text-sm font-semibold">Rank</th>
+                    <th className="px-4 py-2 text-left text-sm font-semibold">Student ID</th>
+                    <th className="px-4 py-2 text-left text-sm font-semibold">Score</th>
+                    <th className="px-4 py-2 text-left text-sm font-semibold">Percentage</th>
+                    <th className="px-4 py-2 text-left text-sm font-semibold">Attempts</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {topPerformers.map((performer) => (
+                    <tr
+                      key={performer.rank}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <span className="inline-block w-8 h-8 bg-blue-600 text-white rounded-full text-center text-sm font-bold leading-8">
+                          {performer.rank}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-gray-900">
+                        {performer.name}
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-gray-900">{performer.score}</td>
+                      <td className="px-4 py-3">
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                          {performer.percentage}%
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">{performer.attempts}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="flex items-center justify-center h-32 text-gray-500">
+                {loading ? 'Loading...' : 'No top performers data available'}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* SUMMARY STATS (COLORFUL) */}
+        <section>
+          <h2 className="text-xl font-bold text-violet-600 mb-4">📈 Summary Statistics</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { label: "Total Students", value: stats.totalStudents, gradient: "from-purple-500 to-pink-600", textColor: "text-purple-100" },
+              { label: "Average Score", value: stats.avgScore, gradient: "from-emerald-500 to-teal-600", textColor: "text-emerald-100" },
+              { label: "Pass Rate", value: `${stats.passRate}%`, gradient: "from-orange-500 to-red-600", textColor: "text-orange-100" },
+              { label: "Avg Attempts", value: stats.avgAttempts, gradient: "from-blue-500 to-indigo-600", textColor: "text-blue-100" },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className={`bg-gradient-to-br ${item.gradient} rounded-2xl p-4 text-white shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 cursor-pointer`}
+              >
+                <p className={`text-xs ${item.textColor} font-medium`}>{item.label}</p>
+                <p className="text-2xl font-bold mt-2">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+      </main>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CollegeTable from '../components/CollegeTable';
 import api from '../api/axios';
+import HomeButton from '../components/HomeButton';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -36,36 +37,9 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 shadow-sm">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              SuperAdmin Dashboard
-            </h1>
-            <p className="text-gray-600">Welcome to the admin panel</p>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-semibold transition shadow-md"
-            >
-              Logout
-            </button>
-            {showDropdown && (
-              <div className="absolute right-0 mt-2 w-48 bg-white border-2 border-indigo-200 rounded-2xl shadow-md p-3 z-10">
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-xl"
-                >
-                  Sign Out
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
+      <div className="fixed top-4 right-4 z-50">
+        <HomeButton />
+      </div>
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
         {loading ? (

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import HomeButton from '../components/HomeButton';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -36,22 +37,19 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col">
 
-      <header className="w-full bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 shadow-lg py-6 px-6">
-        <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">COSMOS</h1>
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        <HomeButton />
+        <button
+          onClick={() => handleOptionClick('superadmin')}
+          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all hover:scale-105 font-medium shadow-md"
+        >
+          SuperAdmin
+        </button>
+      </div>
 
-          <button
-            onClick={() => handleOptionClick('superadmin')}
-            className="px-6 py-3 bg-slate-600 text-white rounded-xl hover:bg-slate-700 transition-colors font-medium shadow-md"
-          >
-            SuperAdmin
-          </button>
-        </div>
-      </header>
-
-      <div className="flex flex-col items-center mt-12 mb-8">
+      <div className="flex flex-col items-center mt-2 mb-8">
         <h2 className="text-6xl font-bold bg-gradient-to-r from-slate-600 to-blue-600 bg-clip-text text-transparent mb-4">COSMOS</h2>
 
         <p className="text-xl text-gray-600 font-medium tracking-wide">
@@ -67,8 +65,8 @@ export default function Landing() {
               onClick={() => handleOptionClick(option.id)}
               className="cursor-pointer"
             >
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-8 h-full min-h-[280px] group">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-700 transition-colors">
+              <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 p-8 h-full min-h-[280px] group">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4 group-hover:scale-105 transition-transform">
                   {option.title}
                 </h2>
 
@@ -87,7 +85,7 @@ export default function Landing() {
                   </p>
                 </div>
 
-                <button className="w-full px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium shadow-md group-hover:shadow-lg">
+                <button className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-xl transition-all hover:scale-105 font-medium shadow-md group-hover:shadow-lg">
                   {option.title} Portal
                 </button>
               </div>
@@ -96,7 +94,7 @@ export default function Landing() {
         </div>
       </main>
 
-      <footer className="bg-white border-t border-gray-100 mt-12">
+      <footer className="bg-white/80 backdrop-blur-md border-t border-gray-100 mt-12 shadow-lg">
         <div className="max-w-5xl mx-auto px-6 py-6">
           <p className="text-center text-gray-600">© 2025 COSMOS. All rights reserved.</p>
         </div>

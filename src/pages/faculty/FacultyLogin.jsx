@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import InputField from '../../components/faculty/InputField';
+import HomeButton from '../../components/HomeButton';
 import api from '../../api/axios';
 
 export default function FacultyLogin() {
@@ -50,6 +51,10 @@ export default function FacultyLogin() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+      <div className="fixed top-4 right-4 z-50">
+        <HomeButton />
+      </div>
+
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Faculty Login</h1>

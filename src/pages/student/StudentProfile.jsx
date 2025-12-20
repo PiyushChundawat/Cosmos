@@ -1,4 +1,5 @@
 import React from 'react';
+import HomeButton from '../../components/HomeButton';
 
 export default function StudentProfile() {
   const student = {
@@ -16,12 +17,9 @@ export default function StudentProfile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <header className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 shadow-sm">
-        <div className="max-w-5xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">My Profile</h1>
-          <p className="text-gray-600">View and manage your information</p>
-        </div>
-      </header>
+      <div className="fixed top-4 right-4 z-50">
+        <HomeButton />
+      </div>
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -114,8 +112,8 @@ export default function StudentProfile() {
                 <p className="text-3xl font-bold mt-2">12</p>
               </div>
 
-              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-4 text-white shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 text-center">
-                <p className="text-xs text-emerald-100 font-medium">Average Score</p>
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 text-white shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 text-center">
+                <p className="text-xs text-blue-100 font-medium">Average Score</p>
                 <p className="text-3xl font-bold mt-2">78%</p>
               </div>
 

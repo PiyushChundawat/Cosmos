@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import HomeButton from '../components/HomeButton';
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:5000/api';
@@ -77,14 +78,9 @@ export default function FacultyAnalytics() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <header className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 shadow-sm">
-        <div className="max-w-5xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Faculty Analytics
-          </h1>
-          <p className="text-gray-600 text-sm">Subject & performance analysis</p>
-        </div>
-      </header>
+      <div className="fixed top-4 right-4 z-50">
+        <HomeButton />
+      </div>
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
         {/* Subject Filter */}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import HomeButton from '../../components/HomeButton';
 import api from '../../api/axios';
 
 export default function StudentSignup() {
@@ -74,6 +75,10 @@ export default function StudentSignup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+      <div className="fixed top-4 right-4 z-50">
+        <HomeButton />
+      </div>
+
       <div className="w-full max-w-2xl">
         <div className="bg-white border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
           <div className="mb-8">
