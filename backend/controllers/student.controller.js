@@ -57,7 +57,7 @@ exports.createStudent = async (req, res) => {
 // ---------------------------------------------
 exports.getDashboard = async (req, res) => {
   try {
-    const studentId = req.params.id;
+    const studentId = req.user._id;
 
     const student = await Student.findById(studentId).lean();
     if (!student) {

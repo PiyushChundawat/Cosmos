@@ -1,35 +1,39 @@
 const express = require("express");
 const router = express.Router();
 
-const auth = require("../middleware/authMiddleware"); // ✅ ADD THIS
+const { protect } = require("../middleware/authMiddleware");
 
 // Controllers
 const studentController = require("../controllers/student.controller");
 const studentTestController = require("../controllers/studentTest.controller");
 
-// PUBLIC (signup)
+// PUBLIC
 router.post("/", studentController.createStudent);
 
-// PROTECTED (login ke baad)
-router.get("/dashboard/:id", auth, studentController.getDashboard);
+// PROTECTED
+router.get("/dashboard", protect, studentController.getDashboard);
 
 router.get(
   "/upcoming-tests/:studentId",
-  auth,
+  protect,
   studentTestController.getUpcomingTests
 );
 
-router.get("/test/:testId", auth, studentTestController.getTestForAttempt);
+router.get(
+  "/test/:testId",
+  protect,
+  studentTestController.getTestForAttempt
+);
 
 router.post(
   "/test/:testId/attempt",
-  auth,
+  protect,
   studentTestController.submitTestAttempt
 );
 
 router.get(
   "/:studentId/performance",
-  auth,
+  protect,
   studentTestController.getStudentPerformance
 );
 
