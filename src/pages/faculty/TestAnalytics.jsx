@@ -37,11 +37,11 @@ const TestAnalytics = () => {
     setError('');
 
     try {
-      // Fetch all 3 endpoints in parallel
+      // FIXED: Added correct base path /faculty/test-analytics
       const [summaryRes, questionRes, performanceRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/test-summary/${id}`, axiosConfig),
-        axios.get(`${API_BASE_URL}/question-stats/${id}`, axiosConfig),
-        axios.get(`${API_BASE_URL}/student-performance/${id}`, axiosConfig)
+        axios.get(`${API_BASE_URL}/faculty/test-analytics/test-summary/${id}`, axiosConfig),
+        axios.get(`${API_BASE_URL}/faculty/test-analytics/question-stats/${id}`, axiosConfig),
+        axios.get(`${API_BASE_URL}/faculty/test-analytics/student-performance/${id}`, axiosConfig)
       ]);
 
       // Set summary
@@ -171,9 +171,16 @@ const TestAnalytics = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
         <div className="max-w-5xl mx-auto px-6 py-8">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl">
-            {error}
+          <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-4">
+            <p className="font-semibold mb-2">Error Loading Analytics</p>
+            <p>{error}</p>
           </div>
+          <button
+            onClick={() => navigate('/faculty/tests')}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium"
+          >
+            Back to Tests
+          </button>
         </div>
       </div>
     );
@@ -183,6 +190,12 @@ const TestAnalytics = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
+          <button
+            onClick={() => navigate('/faculty/tests')}
+            className="text-indigo-600 font-medium hover:text-indigo-700 mb-4 flex items-center gap-2"
+          >
+            ← Back to Tests
+          </button>
           <h1 className="text-3xl font-bold text-gray-900">
             {summary?.subject || 'Test Analytics'}
           </h1>

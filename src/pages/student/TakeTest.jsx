@@ -18,8 +18,8 @@ export default function TakeTest() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const token = localStorage.getItem('token');
-  const studentId = localStorage.getItem('studentId');
+  const token = localStorage.getItem('token') || localStorage.getItem('student_token');
+  const studentId = localStorage.getItem('studentId') || localStorage.getItem('student_id');
 
   useEffect(() => {
     if (!token || !studentId) {
@@ -63,6 +63,15 @@ export default function TakeTest() {
 
       if (response.data.success) {
         const { test, questions } = response.data.data;
+        
+        // Check if test is active (STRICT - must be between start and end time)
+        const testStatus = checkTestTiming(test);
+        
+        if (!testStatus.canStart) {
+          setError(testStatus.message);
+          return;
+        }
+
         setTestData(test);
         setQuestions(questions);
         
@@ -71,14 +80,50 @@ export default function TakeTest() {
       }
     } catch (error) {
       console.error('Error fetching test:', error);
-      setError(error.response?.data?.message || 'Failed to load test');
       
       if (error.response?.status === 401) {
         localStorage.clear();
         navigate('/student/login');
+        return;
       }
+      
+      setError(error.response?.data?.message || 'Failed to load test');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkTestTiming = (test) => {
+    if (!test.schedule?.startTime || !test.schedule?.endTime) {
+      return { canStart: false, message: 'Test is not scheduled yet' };
+    }
+
+    const now = new Date();
+    const startTime = new Date(test.schedule.startTime);
+    const endTime = new Date(test.schedule.endTime);
+
+    // STRICT TIMING - Only allow access between start and end time
+    if (now < startTime) {
+      const diffMinutes = Math.ceil((startTime - now) / (1000 * 60));
+      
+      if (diffMinutes < 60) {
+        return { 
+          canStart: false, 
+          message: `This test hasn't started yet. It will begin in ${diffMinutes} minutes.` 
+        };
+      }
+      
+      return { 
+        canStart: false, 
+        message: `This test hasn't started yet. It will begin on ${startTime.toLocaleString('en-IN')}` 
+      };
+    } else if (now >= startTime && now <= endTime) {
+      return { canStart: true };
+    } else {
+      return { 
+        canStart: false, 
+        message: 'This test has ended. Check your Performance page to see results.' 
+      };
     }
   };
 
@@ -157,14 +202,25 @@ export default function TakeTest() {
         <div className="max-w-5xl mx-auto px-6 py-8">
           <div className="bg-white rounded-2xl shadow-lg border border-indigo-100 p-8">
             <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6">
-              {error}
+              <p className="font-semibold mb-2">⚠️ Cannot Start Test</p>
+              <p>{error}</p>
             </div>
-            <button
-              onClick={() => navigate('/student/tests')}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium"
-            >
-              Back to Tests
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={() => navigate('/student/tests')}
+                className="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium"
+              >
+                Back to Tests
+              </button>
+              {error.includes('ended') && (
+                <button
+                  onClick={() => navigate('/student/performance')}
+                  className="px-6 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-colors font-medium"
+                >
+                  View Results
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -175,7 +231,13 @@ export default function TakeTest() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-lg border border-indigo-100 p-8 text-center">
-          <p className="text-gray-600 text-lg">No questions available for this test.</p>
+          <p className="text-gray-600 text-lg mb-4">No questions available for this test.</p>
+          <button
+            onClick={() => navigate('/student/tests')}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium"
+          >
+            Back to Tests
+          </button>
         </div>
       </div>
     );
@@ -196,6 +258,9 @@ export default function TakeTest() {
             <p className={`text-3xl font-bold ${timeRemaining < 300 ? 'text-red-600' : 'text-indigo-600'}`}>
               {formatTime(timeRemaining)}
             </p>
+            {timeRemaining < 300 && (
+              <p className="text-xs text-red-600 mt-2">⚠️ Less than 5 minutes!</p>
+            )}
           </div>
 
           {/* Progress */}

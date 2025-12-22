@@ -17,12 +17,18 @@ const ManageQuestions = () => {
     option2: '',
     option3: '',
     option4: '',
-    correctAnswer: '1',
+    correctAnswer: '0',  // Changed to 0-indexed
     subject: '',
     topic: ''
   });
 
+  const token = localStorage.getItem('token') || localStorage.getItem('facultyToken');
+
   useEffect(() => {
+    if (!token) {
+      window.location.href = '/faculty/login';
+      return;
+    }
     fetchQuestions();
   }, []);
 
@@ -31,11 +37,20 @@ const ManageQuestions = () => {
     setError(null);
 
     try {
-      const response = await api.get('/faculty/questions');
+      const response = await api.get('/faculty/questions', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       console.log('Fetch response:', response.data);
       setQuestions(response.data.data || response.data.questions || []);
     } catch (err) {
       console.error('Failed to fetch questions:', err);
+      if (err.response?.status === 401) {
+        localStorage.clear();
+        window.location.href = '/faculty/login';
+        return;
+      }
       setError(err.response?.data?.message || 'Failed to load questions');
     } finally {
       setLoading(false);
@@ -54,13 +69,8 @@ const ManageQuestions = () => {
     setLoading(true);
 
     try {
-      // Get user from localStorage
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      
-      // Simple payload matching backend - including collegeId
+      // Simple payload - backend will get collegeId from token
       const payload = {
-        facultyId: user.id || user._id || "675a1234567890abcdef1234",
-        collegeId: user.collegeId || "675a1234567890abcdef5678", // Add collegeId
         questionText: formData.questionText,
         options: [
           formData.option1,
@@ -68,7 +78,7 @@ const ManageQuestions = () => {
           formData.option3,
           formData.option4
         ],
-        correctAnswer: parseInt(formData.correctAnswer) - 1,
+        correctAnswer: parseInt(formData.correctAnswer), // Already 0-indexed
         tags: {
           subject: formData.subject,
           topic: formData.topic
@@ -77,8 +87,13 @@ const ManageQuestions = () => {
 
       console.log('Sending payload:', JSON.stringify(payload, null, 2));
       
-      // Try the POST request
-      const response = await api.post('/faculty/questions', payload);
+      const response = await api.post('/faculty/questions', payload, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       console.log('Response:', response.data);
 
       alert('Question created successfully!');
@@ -88,10 +103,16 @@ const ManageQuestions = () => {
     } catch (error) {
       console.error('Full error:', error);
       console.error('Error response:', error.response);
-      console.error('Error data:', error.response?.data);
+      
+      if (error.response?.status === 401) {
+        alert('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/faculty/login';
+        return;
+      }
       
       const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to create question';
-      alert(`Error: ${errorMsg}\n\nFull details in console.`);
+      alert(`Error: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
@@ -103,11 +124,22 @@ const ManageQuestions = () => {
     }
 
     try {
-      await api.delete(`/faculty/questions/${questionId}`);
+      await api.delete(`/faculty/questions/${questionId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       alert('Question deleted successfully!');
       fetchQuestions();
     } catch (error) {
       console.error('Error deleting question:', error);
+      
+      if (error.response?.status === 401) {
+        localStorage.clear();
+        window.location.href = '/faculty/login';
+        return;
+      }
+      
       alert(error.response?.data?.message || 'Failed to delete question');
     }
   };
@@ -119,7 +151,7 @@ const ManageQuestions = () => {
       option2: '',
       option3: '',
       option4: '',
-      correctAnswer: '1',
+      correctAnswer: '0',
       subject: '',
       topic: ''
     });
@@ -297,10 +329,10 @@ const ManageQuestions = () => {
                 disabled={loading}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-colors"
               >
-                <option value="1">Option 1</option>
-                <option value="2">Option 2</option>
-                <option value="3">Option 3</option>
-                <option value="4">Option 4</option>
+                <option value="0">Option 1</option>
+                <option value="1">Option 2</option>
+                <option value="2">Option 3</option>
+                <option value="3">Option 4</option>
               </select>
             </div>
 

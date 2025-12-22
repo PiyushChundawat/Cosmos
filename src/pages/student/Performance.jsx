@@ -1,34 +1,139 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import HomeButton from '../../components/HomeButton';
+import api from '../../api/axios';
 
 export default function Performance() {
-  const stats = [
-    { title: 'Average Percentage', value: '78.5%' },
-    { title: 'Tests Attempted', value: '12' },
-    { title: 'Highest Score', value: '95%' },
-    { title: 'Tests Passed', value: '10' },
-  ];
+  const navigate = useNavigate();
+  const [performanceData, setPerformanceData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const recentAttempts = [
-    { id: 1, testName: 'Aptitude Test', date: '2025-12-05', score: 85, total: 100, percentage: 85, status: 'Passed' },
-    { id: 2, testName: 'Technical Assessment', date: '2025-12-03', score: 72, total: 100, percentage: 72, status: 'Passed' },
-    { id: 3, testName: 'Coding Challenge', date: '2025-12-01', score: 65, total: 100, percentage: 65, status: 'Passed' },
-    { id: 4, testName: 'English Communication', date: '2025-11-28', score: 38, total: 50, percentage: 76, status: 'Passed' },
-    { id: 5, testName: 'Logical Reasoning', date: '2025-11-25', score: 90, total: 100, percentage: 90, status: 'Passed' },
-  ];
+  const token = localStorage.getItem('token') || localStorage.getItem('student_token');
+  const studentId = localStorage.getItem('studentId') || localStorage.getItem('student_id');
+  const studentName = localStorage.getItem('student_name');
 
-  const getStatusColor = (status) =>
-    status === 'Passed'
-      ? 'bg-green-100 text-green-800'
-      : 'bg-red-100 text-red-800';
+  useEffect(() => {
+    console.log('🔵 Performance mounting...');
+    console.log('Token:', token ? 'Present' : 'Missing');
+    console.log('StudentId:', studentId);
+    
+    if (!token || !studentId) {
+      console.log('❌ Missing auth data, redirecting to login');
+      navigate('/student/login');
+      return;
+    }
+    
+    fetchPerformance();
+  }, []);
 
-  const getScoreColor = (percentage) => {
-    if (percentage >= 80) return 'text-green-600';
-    if (percentage >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+  const fetchPerformance = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      console.log('🔵 Fetching performance...');
+      
+      // Your backend route: GET /student/:studentId/performance
+      const response = await api.get(`/student/${studentId}/performance`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('✅ Performance response:', response.data);
+
+      // Your backend returns: { success: true, data: { attempts, resumeScore } }
+      if (response.data.success) {
+        setPerformanceData(response.data.data);
+      }
+    } catch (error) {
+      console.error('❌ Performance error:', error);
+      
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.log('❌ Unauthorized, clearing localStorage');
+        localStorage.clear();
+        navigate('/student/login');
+        return;
+      }
+      
+      setError(error.response?.data?.message || 'Failed to load performance data');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const trendScores = [65, 72, 68, 85, 78, 90, 85, 88, 95, 82, 76, 85];
+  const getRelativeTime = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = now - date;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return '1 day ago';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    return `${Math.floor(diffDays / 30)} months ago`;
+  };
+
+  const getGrade = (percentage) => {
+    if (percentage >= 90) return { grade: 'A+', color: 'bg-green-600' };
+    if (percentage >= 80) return { grade: 'A', color: 'bg-green-500' };
+    if (percentage >= 70) return { grade: 'B+', color: 'bg-blue-600' };
+    if (percentage >= 60) return { grade: 'B', color: 'bg-blue-500' };
+    if (percentage >= 50) return { grade: 'C', color: 'bg-yellow-600' };
+    if (percentage >= 40) return { grade: 'D', color: 'bg-orange-600' };
+    return { grade: 'F', color: 'bg-red-600' };
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/student/login');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-16 w-16 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-indigo-600 text-lg font-medium">Loading performance...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="max-w-5xl mx-auto px-6 py-10">
+          <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 text-center">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-red-800 mb-2">Failed to load performance</h2>
+            <p className="text-red-700 mb-6">{error}</p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={fetchPerformance}
+                className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 font-semibold transition"
+              >
+                Retry
+              </button>
+              <button
+                onClick={() => navigate('/student/dashboard')}
+                className="px-6 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 font-semibold transition"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Backend response: { attempts: [], resumeScore: number }
+  const attempts = performanceData?.attempts || [];
+  const resumeScore = performanceData?.resumeScore || 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -36,138 +141,120 @@ export default function Performance() {
         <HomeButton />
       </div>
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {stats.map((stat, index) => {
-            const gradients = [
-              "from-purple-500 to-pink-600",
-              "from-emerald-500 to-teal-600", 
-              "from-orange-500 to-red-600",
-              "from-blue-500 to-indigo-600"
-            ];
-            const textColors = [
-              "text-purple-100",
-              "text-emerald-100",
-              "text-orange-100", 
-              "text-blue-100"
-            ];
-            return (
-              <div
-                key={index}
-                className={`bg-gradient-to-br ${gradients[index]} rounded-2xl p-4 text-white shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300`}
-              >
-                <p className={`text-xs ${textColors[index]} font-medium`}>{stat.title}</p>
-                <p className="text-2xl font-bold mt-2">{stat.value}</p>
-              </div>
-            );
-          })}
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        <div className="mb-8">
+          <button
+            onClick={() => navigate('/student/dashboard')}
+            className="text-indigo-600 hover:text-indigo-700 font-medium mb-4 flex items-center gap-2"
+          >
+            ← Back to Dashboard
+          </button>
+          <h1 className="text-3xl font-bold text-gray-900">My Performance</h1>
+          <p className="text-gray-600 mt-2">Track your test scores and overall progress</p>
         </div>
 
-        <div className="bg-white border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
-          <h2 className="text-xl font-bold text-indigo-800 mb-6">Score Trend</h2>
-          <div className="h-64 flex items-end justify-between gap-3">
-            {trendScores.map((score, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center">
-                <div className="text-xs font-semibold text-gray-700 mb-1">
-                  {score}%
-                </div>
+        {/* Resume Score Card */}
+        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-8 text-white shadow-lg mb-8">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Resume Readiness Score</h2>
+              <p className="text-indigo-100">Based on your test performance</p>
+            </div>
+            <div className="text-center mt-4 md:mt-0">
+              <p className="text-7xl font-bold">{resumeScore.toFixed(1)}</p>
+              <p className="text-2xl font-semibold text-indigo-100 mt-2">/ 10.0</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Test Attempts */}
+        {attempts.length === 0 ? (
+          <div className="bg-white border-2 border-indigo-200 rounded-2xl shadow-md p-12 text-center">
+            <div className="text-6xl mb-4">📝</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">No Test Attempts Yet</h2>
+            <p className="text-gray-600 mb-6">Start taking tests to see your performance here</p>
+            <button
+              onClick={() => navigate('/student/tests')}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition font-semibold"
+            >
+              View Available Tests
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Test Attempts ({attempts.length})</h2>
+            </div>
+            
+            {attempts.map((attempt) => {
+              const gradeInfo = getGrade(attempt.percentage || 0);
+              
+              return (
                 <div
-                  className="w-full bg-indigo-600 rounded-t-xl"
-                  style={{ height: `${(score / 100) * 220}px` }}
-                />
-                <div className="text-xs text-gray-500 mt-2">
-                  T{index + 1}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
-          <div className="px-6 py-4 border-b border-indigo-200">
-            <h2 className="text-xl font-bold text-indigo-800">Recent Test Attempts</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-indigo-50 text-indigo-800">
-                  <th className="px-4 py-3 text-left font-semibold">#</th>
-                  <th className="px-4 py-3 text-left font-semibold">Test Name</th>
-                  <th className="px-4 py-3 text-left font-semibold">Date</th>
-                  <th className="px-4 py-3 text-left font-semibold">Score</th>
-                  <th className="px-4 py-3 text-left font-semibold">Percentage</th>
-                  <th className="px-4 py-3 text-left font-semibold">Status</th>
-                  <th className="px-4 py-3 text-left font-semibold">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-indigo-200">
-                {recentAttempts.map((attempt, index) => (
-                  <tr key={attempt.id} className="hover:bg-indigo-50 transition">
-                    <td className="px-4 py-3 font-semibold text-gray-900">
-                      {index + 1}
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-semibold text-gray-900">
-                        {attempt.testName}
+                  key={attempt._id}
+                  className="bg-white border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">
+                        {attempt.testTitle || attempt.testId?.testTitle || 'Test'}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Attempted {getRelativeTime(attempt.attemptedAt || attempt.createdAt)}
                       </p>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {attempt.date}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="font-semibold text-gray-900">
-                        {attempt.score}/{attempt.total}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`font-semibold text-lg ${getScoreColor(
-                          attempt.percentage
-                        )}`}
-                      >
-                        {attempt.percentage}%
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                          attempt.status
-                        )}`}
-                      >
-                        {attempt.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button className="text-indigo-600 hover:text-indigo-700 font-semibold">
-                        View Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                    </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
-            <h3 className="text-xl font-bold text-indigo-800 mb-4">Strong Areas</h3>
-            <ul className="space-y-3 text-gray-700">
-              <li>Logical Reasoning: 90% average</li>
-              <li>Aptitude Tests: 85% average</li>
-              <li>Problem Solving: 82% average</li>
-            </ul>
-          </div>
+                    <div className="flex items-center gap-6">
+                      {/* Score */}
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600 mb-1">Score</p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          {attempt.score}/{attempt.totalMarks}
+                        </p>
+                      </div>
 
-          <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6">
-            <h3 className="text-xl font-bold text-indigo-800 mb-4">Areas to Improve</h3>
-            <ul className="space-y-3 text-gray-700">
-              <li>Coding Challenges: 65% average</li>
-              <li>Technical Assessment: 72% average</li>
-              <li>Communication: 76% average</li>
-            </ul>
+                      {/* Percentage */}
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600 mb-1">Percentage</p>
+                        <p className="text-2xl font-bold text-indigo-600">
+                          {attempt.percentage?.toFixed(1)}%
+                        </p>
+                      </div>
+
+                      {/* Grade */}
+                      <div className={`${gradeInfo.color} text-white px-6 py-3 rounded-xl text-center min-w-[80px]`}>
+                        <p className="text-xs font-medium opacity-90">Grade</p>
+                        <p className="text-3xl font-bold">{gradeInfo.grade}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Faculty Feedback */}
+                  {attempt.facultyFeedback && (
+                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                      <p className="text-sm font-semibold text-blue-900 mb-1">Faculty Feedback:</p>
+                      <p className="text-gray-700 italic">"{attempt.facultyFeedback}"</p>
+                    </div>
+                  )}
+
+                  {/* Progress Bar */}
+                  <div className="mt-4">
+                    <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          attempt.percentage >= 75 ? 'bg-green-600' :
+                          attempt.percentage >= 50 ? 'bg-yellow-600' :
+                          'bg-red-600'
+                        }`}
+                        style={{ width: `${attempt.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
+        )}
       </main>
     </div>
   );

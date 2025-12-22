@@ -12,9 +12,10 @@ export default function TestDetails() {
   const [questionCount, setQuestionCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [testStatus, setTestStatus] = useState(null);
 
-  const token = localStorage.getItem('token');
-  const studentId = localStorage.getItem('studentId');
+  const token = localStorage.getItem('token') || localStorage.getItem('student_token');
+  const studentId = localStorage.getItem('studentId') || localStorage.getItem('student_id');
 
   useEffect(() => {
     if (!token || !studentId) {
@@ -22,6 +23,15 @@ export default function TestDetails() {
       return;
     }
     fetchTestDetails();
+    
+    // Refresh status every 30 seconds
+    const interval = setInterval(() => {
+      if (test) {
+        setTestStatus(getTestStatus(test));
+      }
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, [testId]);
 
   const fetchTestDetails = async () => {
@@ -40,8 +50,10 @@ export default function TestDetails() {
       );
 
       if (response.data.success) {
-        setTest(response.data.data.test);
+        const testData = response.data.data.test;
+        setTest(testData);
         setQuestionCount(response.data.data.questions.length);
+        setTestStatus(getTestStatus(testData));
       }
     } catch (error) {
       console.error('Error fetching test details:', error);
@@ -53,6 +65,54 @@ export default function TestDetails() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getTestStatus = (test) => {
+    if (!test.schedule?.startTime || !test.schedule?.endTime) {
+      return { status: 'not_scheduled', canStart: false, message: 'Test not scheduled' };
+    }
+
+    const now = new Date();
+    const startTime = new Date(test.schedule.startTime);
+    const endTime = new Date(test.schedule.endTime);
+
+    // Strict timing - must be between start and end time
+    if (now < startTime) {
+      const diffTime = startTime - now;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+      const diffMinutes = Math.ceil(diffTime / (1000 * 60));
+
+      if (diffMinutes < 60) {
+        return {
+          status: 'starting_soon',
+          canStart: false,
+          message: `Test starts in ${diffMinutes} minutes`
+        };
+      } else if (diffHours < 24) {
+        return {
+          status: 'today',
+          canStart: false,
+          message: `Test starts in ${diffHours} hours`
+        };
+      } else if (diffDays === 1) {
+        return {
+          status: 'tomorrow',
+          canStart: false,
+          message: 'Test starts tomorrow'
+        };
+      }
+      
+      return { 
+        status: 'upcoming', 
+        canStart: false, 
+        message: `Test will start on ${formatDate(startTime)} at ${formatTime(startTime)}` 
+      };
+    } else if (now >= startTime && now <= endTime) {
+      return { status: 'active', canStart: true, message: 'Test is active now!' };
+    } else {
+      return { status: 'ended', canStart: false, message: 'This test has ended' };
     }
   };
 
@@ -74,6 +134,16 @@ export default function TestDetails() {
       minute: '2-digit',
       hour12: true
     });
+  };
+
+  const handleStartTest = () => {
+    if (!testStatus?.canStart) {
+      alert(testStatus?.message || 'Test is not available yet');
+      return;
+    }
+    
+    // Navigate to take-test page
+    navigate(`/student/take-test/${testId}`);
   };
 
   if (loading) {
@@ -109,7 +179,6 @@ export default function TestDetails() {
 
   if (!test) return null;
 
-  // Calculate passing marks (40% of total)
   const passingMarks = Math.round(test.totalMarks * 0.4);
 
   return (
@@ -126,10 +195,38 @@ export default function TestDetails() {
           <p className="text-gray-600 mt-2">Review test details before starting</p>
         </div>
 
+        {/* Test Status Alert */}
+        {testStatus && (
+          <div className={`mb-6 p-4 rounded-2xl border-2 ${
+            testStatus.status === 'active'
+              ? 'bg-green-50 border-green-200' 
+              : testStatus.status === 'ended'
+              ? 'bg-red-50 border-red-200'
+              : testStatus.status === 'starting_soon'
+              ? 'bg-orange-50 border-orange-200'
+              : 'bg-yellow-50 border-yellow-200'
+          }`}>
+            <p className={`font-semibold ${
+              testStatus.status === 'active'
+                ? 'text-green-700'
+                : testStatus.status === 'ended'
+                ? 'text-red-700'
+                : testStatus.status === 'starting_soon'
+                ? 'text-orange-700'
+                : 'text-yellow-700'
+            }`}>
+              {testStatus.status === 'active' && '🟢 '}
+              {testStatus.status === 'starting_soon' && '⏰ '}
+              {testStatus.status === 'ended' && '⏰ '}
+              {testStatus.status === 'upcoming' && '📅 '}
+              {testStatus.message}
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Test Info */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Test Description (if available from backend, otherwise generic) */}
             <div className="bg-white rounded-2xl shadow-lg border border-indigo-100 p-8">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Test Description</h2>
               <p className="text-gray-700 leading-relaxed">
@@ -137,7 +234,6 @@ export default function TestDetails() {
               </p>
             </div>
 
-            {/* Instructions */}
             <div className="bg-white rounded-2xl shadow-lg border border-indigo-100 p-8">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Instructions</h2>
               <ul className="space-y-4">
@@ -172,7 +268,6 @@ export default function TestDetails() {
               </ul>
             </div>
 
-            {/* Important Notes */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-8">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                 <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
@@ -238,15 +333,57 @@ export default function TestDetails() {
                 </div>
               </div>
 
-              <button
-                onClick={() => navigate(`/student/take-test/${testId}`)}
-                className="w-full mt-8 bg-indigo-600 text-white py-4 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-md"
-              >
-                Start Test Now
-              </button>
+              {testStatus?.canStart ? (
+                <button
+                  onClick={handleStartTest}
+                  className="w-full mt-8 bg-green-600 text-white py-4 rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-md"
+                >
+                  🚀 Start Test Now
+                </button>
+              ) : testStatus?.status === 'ended' ? (
+                <div className="mt-8">
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                    <p className="text-red-700 text-sm font-medium text-center">
+                      This test has ended
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => navigate('/student/performance')}
+                    className="w-full bg-gray-600 text-white py-4 rounded-xl font-semibold hover:bg-gray-700 transition-colors"
+                  >
+                    View Results
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-8">
+                  <div className={`border rounded-xl p-4 mb-4 ${
+                    testStatus?.status === 'starting_soon'
+                      ? 'bg-orange-50 border-orange-200'
+                      : 'bg-yellow-50 border-yellow-200'
+                  }`}>
+                    <p className={`text-sm font-medium text-center ${
+                      testStatus?.status === 'starting_soon'
+                        ? 'text-orange-700'
+                        : 'text-yellow-700'
+                    }`}>
+                      {testStatus?.status === 'starting_soon' 
+                        ? 'Test will be available at the scheduled time'
+                        : 'Test will be available at scheduled time'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => navigate('/student/tests')}
+                    className="w-full bg-indigo-600 text-white py-4 rounded-xl font-semibold hover:bg-indigo-700 transition-colors"
+                  >
+                    Back to Tests
+                  </button>
+                </div>
+              )}
 
               <p className="text-xs text-gray-500 mt-4 text-center leading-relaxed">
-                By starting this test, you agree to follow all instructions and complete it within the given time.
+                {testStatus?.canStart 
+                  ? 'By starting this test, you agree to follow all instructions and complete it within the given time.'
+                  : 'Please wait for the scheduled time to start this test.'}
               </p>
             </div>
           </div>

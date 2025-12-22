@@ -18,8 +18,13 @@ const FacultyDashboard = () => {
   const [error, setError] = useState(null);
   
   const facultyName = localStorage.getItem('facultyName') || 'Faculty';
+  const token = localStorage.getItem('token') || localStorage.getItem('facultyToken');
 
   useEffect(() => {
+    if (!token) {
+      navigate('/faculty/login');
+      return;
+    }
     fetchDashboardData();
   }, []);
 
@@ -28,11 +33,15 @@ const FacultyDashboard = () => {
     setError(null);
 
     try {
+      const headers = {
+        'Authorization': `Bearer ${token}`
+      };
+
       // Fetch all data in parallel
       const [statsRes, recentRes, upcomingRes] = await Promise.all([
-        api.get('/faculty/dashboard/stats'),
-        api.get('/faculty/dashboard/recentTest'),
-        api.get('/faculty/dashboard/upcoming-test')
+        api.get('/faculty/dashboard/stats', { headers }),
+        api.get('/faculty/dashboard/recentTest', { headers }),
+        api.get('/faculty/dashboard/upcoming-test', { headers })
       ]);
 
       // Set stats
@@ -56,8 +65,8 @@ const FacultyDashboard = () => {
       const formattedUpcomingTests = upcomingRes.data.data?.map(test => ({
         id: test._id,
         title: test.testTitle || test.title || 'Untitled Test',
-        startDate: test.schedule?.startDate 
-          ? new Date(test.schedule.startDate).toLocaleDateString('en-IN')
+        startDate: test.schedule?.startTime 
+          ? new Date(test.schedule.startTime).toLocaleDateString('en-IN')
           : 'Not scheduled',
         duration: test.duration ? `${test.duration} mins` : 'N/A'
       })) || [];
@@ -65,24 +74,18 @@ const FacultyDashboard = () => {
 
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
+      
+      if (err.response?.status === 401) {
+        localStorage.clear();
+        navigate('/faculty/login');
+        return;
+      }
+      
       setError(err.response?.data?.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
   };
-
-  const recentTestColumns = [
-    { header: 'Test Title', accessor: 'title' },
-    { header: 'Date', accessor: 'date' },
-    { header: 'Attempts', accessor: 'attempts' },
-    { header: 'Avg Score', render: (row) => `${row.avgScore}%` }
-  ];
-
-  const upcomingTestColumns = [
-    { header: 'Test Title', accessor: 'title' },
-    { header: 'Start Date', accessor: 'startDate' },
-    { header: 'Duration', accessor: 'duration' }
-  ];
 
   if (loading) {
     return (
@@ -121,6 +124,11 @@ const FacultyDashboard = () => {
       </div>
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+        {/* Welcome Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Welcome back, {facultyName}!</h1>
+          <p className="text-gray-600 mt-1">Here's your teaching overview</p>
+        </div>
 
         {/* STATS (COLORFUL) */}
         <section>
