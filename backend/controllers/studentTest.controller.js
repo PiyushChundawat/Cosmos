@@ -1,25 +1,33 @@
 const Test = require("../models/Faculty/test");
 const Question = require("../models/Faculty/question");
-
 const TestAttempt = require("../models/Student/testAttempt");
-const Student = require("../models/student.model");
+const User = require("../models/user.model");
 
-// 1) Upcoming tests for a student (by college)
+// 1) Upcoming tests for a student (by college) - FIXED to show active tests too
 exports.getUpcomingTests = async (req, res) => {
   try {
     const { studentId } = req.params;
 
-    const student = await Student.findById(studentId).lean();
-    if (!student) {
+    // Get user from User model (not Student model)
+    const user = await User.findById(studentId).populate('college').lean();
+    
+    if (!user || user.role !== 'student') {
       return res.status(404).json({ success: false, message: "Student not found" });
+    }
+
+    const collegeId = user.college?._id;
+    
+    if (!collegeId) {
+      return res.status(400).json({ success: false, message: "Student not associated with college" });
     }
 
     const now = new Date();
 
+    // FIXED: Show tests that haven't ended yet (both upcoming AND active)
     const tests = await Test.find({
-      collegeId: student.collegeId,            // 🔴 same college
+      collegeId: collegeId,
       "schedule.isScheduled": true,
-      "schedule.startTime": { $gte: now },
+      "schedule.endTime": { $gte: now },  // Changed from startTime to endTime
       status: "scheduled",
     })
       .sort({ "schedule.startTime": 1 })
@@ -27,15 +35,18 @@ exports.getUpcomingTests = async (req, res) => {
 
     res.status(200).json({ success: true, data: tests });
   } catch (error) {
+    console.error("getUpcomingTests error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 2) Get test for attempt (no change except it's already filtered when listing)
+// 2) Get test for attempt
 exports.getTestForAttempt = async (req, res) => {
   try {
     const { testId } = req.params;
+    
     const test = await Test.findById(testId).lean();
+    
     if (!test) {
       return res.status(404).json({ success: false, message: "Test not found" });
     }
@@ -43,7 +54,7 @@ exports.getTestForAttempt = async (req, res) => {
     const questions = await Question.find({
       _id: { $in: test.questionIds },
       isActive: true,
-      collegeId: test.collegeId,              // 🔴 ensure same college questions
+      collegeId: test.collegeId,
     })
       .select("questionText options tags")
       .lean();
@@ -56,6 +67,7 @@ exports.getTestForAttempt = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("getTestForAttempt error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -66,29 +78,40 @@ exports.submitTestAttempt = async (req, res) => {
     const { studentId, answers } = req.body;
     const { testId } = req.params;
 
-    const student = await Student.findById(studentId).lean();
-    if (!student) {
+    // Get user from User model
+    const user = await User.findById(studentId).populate('college').lean();
+    
+    if (!user || user.role !== 'student') {
       return res.status(404).json({ success: false, message: "Student not found" });
     }
 
+    const collegeId = user.college?._id;
+    
+    if (!collegeId) {
+      return res.status(400).json({ success: false, message: "Student not associated with college" });
+    }
+
     const test = await Test.findById(testId).lean();
+    
     if (!test) {
       return res.status(404).json({ success: false, message: "Test not found" });
     }
 
-    // 🔴 safety: student must belong to same college as test
-    if (String(student.collegeId) !== String(test.collegeId)) {
+    // Safety: student must belong to same college as test
+    if (String(collegeId) !== String(test.collegeId)) {
       return res.status(403).json({
         success: false,
         message: "You are not allowed to attempt this test",
       });
     }
 
+    // Check if already attempted
     const existing = await TestAttempt.findOne({
       testId,
       studentId,
-      collegeId: student.collegeId,
+      collegeId: collegeId,
     });
+    
     if (existing) {
       return res.status(400).json({
         success: false,
@@ -96,19 +119,21 @@ exports.submitTestAttempt = async (req, res) => {
       });
     }
 
+    // Get questions with correct answers
     const questions = await Question.find({
       _id: { $in: test.questionIds },
       collegeId: test.collegeId,
     }).lean();
 
-    const map = {};
+    const questionMap = {};
     questions.forEach((q) => {
-      map[q._id.toString()] = q;
+      questionMap[q._id.toString()] = q;
     });
 
+    // Process answers
     let correct = 0;
     const processed = answers.map((ans) => {
-      const q = map[ans.questionId];
+      const q = questionMap[ans.questionId];
       const isCorrect = q && q.correctAnswer === ans.selectedOption;
       if (isCorrect) correct++;
       return {
@@ -118,15 +143,17 @@ exports.submitTestAttempt = async (req, res) => {
       };
     });
 
+    // Calculate score
     const totalQ = questions.length || 1;
     const marksPerQ = test.totalMarks / totalQ;
     const score = correct * marksPerQ;
     const percentage = (score / test.totalMarks) * 100;
 
+    // Create attempt
     const attempt = await TestAttempt.create({
       studentId,
       testId,
-      collegeId: student.collegeId,      // 🔴 store collegeId
+      collegeId: collegeId,
       answers: processed,
       score,
       totalMarks: test.totalMarks,
@@ -140,6 +167,7 @@ exports.submitTestAttempt = async (req, res) => {
       data: attempt,
     });
   } catch (error) {
+    console.error("submitTestAttempt error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -149,14 +177,22 @@ exports.getStudentPerformance = async (req, res) => {
   try {
     const { studentId } = req.params;
 
-    const student = await Student.findById(studentId).lean();
-    if (!student) {
+    // Get user from User model
+    const user = await User.findById(studentId).populate('college').lean();
+    
+    if (!user || user.role !== 'student') {
       return res.status(404).json({ success: false, message: "Student not found" });
+    }
+
+    const collegeId = user.college?._id;
+    
+    if (!collegeId) {
+      return res.status(400).json({ success: false, message: "Student not associated with college" });
     }
 
     const attempts = await TestAttempt.find({
       studentId,
-      collegeId: student.collegeId,
+      collegeId: collegeId,
     })
       .populate("testId", "testTitle")
       .sort({ createdAt: -1 })
@@ -173,16 +209,28 @@ exports.getStudentPerformance = async (req, res) => {
       attempts.reduce((sum, a) => sum + (a.percentage || 0), 0) /
       attempts.length;
 
+    // Simple resume score logic: scale avgPercentage to 10
     const resumeScore = Math.round((avgPercentage / 10) * 10) / 10;
 
     res.status(200).json({
       success: true,
       data: {
-        attempts,
+        attempts: attempts.map(a => ({
+          _id: a._id,
+          testId: a.testId?._id,
+          testTitle: a.testId?.testTitle,
+          score: a.score,
+          totalMarks: a.totalMarks,
+          percentage: a.percentage,
+          facultyFeedback: a.facultyFeedback,
+          createdAt: a.createdAt,
+          attemptedAt: a.createdAt,
+        })),
         resumeScore,
       },
     });
   } catch (error) {
+    console.error("getStudentPerformance error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

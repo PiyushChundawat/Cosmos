@@ -2,29 +2,47 @@
 const mongoose = require('mongoose');
 const Test = require('../../models/Faculty/test');
 const Question = require('../../models/Faculty/question');
+const User = require('../../models/user.model');
 
 // Create a new test
 exports.createTest = async (req, res) => {
     try {
-        const { facultyId, testTitle, questionIds, schedule, duration } = req.body;
+        const { testTitle, questionIds, schedule, duration } = req.body;
 
-        // Validation
-        if (!facultyId || !testTitle || !questionIds || !Array.isArray(questionIds) || questionIds.length === 0) {
-            return res.status(400).json({ 
-                message: "Missing required fields: facultyId, testTitle, and questionIds are required" 
+        // Get faculty from token
+        const facultyUser = await User.findById(req.user._id).populate('college').lean();
+        
+        if (!facultyUser || facultyUser.role !== 'faculty') {
+            return res.status(403).json({ 
+                message: "Unauthorized - Faculty only" 
             });
         }
 
-        // Verify all questions exist and belong to the faculty
+        const collegeId = facultyUser.college?._id;
+        
+        if (!collegeId) {
+            return res.status(400).json({ 
+                message: "Faculty not associated with any college" 
+            });
+        }
+
+        // Validation
+        if (!testTitle || !questionIds || !Array.isArray(questionIds) || questionIds.length === 0) {
+            return res.status(400).json({ 
+                message: "Missing required fields: testTitle and questionIds are required" 
+            });
+        }
+
+        // Verify all questions exist, are active, and belong to the same college
         const questions = await Question.find({
             _id: { $in: questionIds },
-            facultyId: facultyId,
+            collegeId: collegeId,
             isActive: true
         });
 
         if (questions.length !== questionIds.length) {
             return res.status(400).json({ 
-                message: "Some questions are invalid or don't belong to this faculty" 
+                message: "Some questions are invalid or not from your college" 
             });
         }
 
@@ -33,7 +51,8 @@ exports.createTest = async (req, res) => {
 
         // Create test object
         const newTest = new Test({
-            facultyId,
+            facultyId: facultyUser._id,
+            collegeId: collegeId,
             testTitle,
             questionIds,
             schedule: schedule || {
@@ -50,39 +69,63 @@ exports.createTest = async (req, res) => {
         const savedTest = await newTest.save();
 
         res.status(201).json({
+            success: true,
             message: "Test created successfully",
-            test: savedTest
+            data: savedTest
         });
 
     } catch(error) {
+        console.error('Create test error:', error);
         res.status(500).json({
+            success: false,
             message: "Error creating test",
             error: error.message
         });
     }
 };
 
-// Get all tests (with optional filtering by facultyId)
+// Get all tests for faculty's college
 exports.getAllTests = async (req, res) => {
     try {
-        const { facultyId, status } = req.query;
+        const facultyUser = await User.findById(req.user._id).populate('college').lean();
         
-        const filter = {};
-        if (facultyId) filter.facultyId = facultyId;
+        if (!facultyUser || facultyUser.role !== 'faculty') {
+            return res.status(403).json({ 
+                message: "Unauthorized - Faculty only" 
+            });
+        }
+
+        const collegeId = facultyUser.college?._id;
+        
+        if (!collegeId) {
+            return res.status(400).json({ 
+                message: "Faculty not associated with any college" 
+            });
+        }
+
+        const { status } = req.query;
+        
+        const filter = {
+            collegeId: collegeId,
+            facultyId: facultyUser._id  // Only show tests created by this faculty
+        };
+        
         if (status) filter.status = status;
 
         const tests = await Test.find(filter)
-            .populate('facultyId', 'name email') // Populate faculty details if needed
             .sort({ createdAt: -1 });
 
         res.status(200).json({
+            success: true,
             message: "Tests retrieved successfully",
             count: tests.length,
-            tests
+            data: tests
         });
 
     } catch(error) {
+        console.error('Get all tests error:', error);
         res.status(500).json({
+            success: false,
             message: "Error retrieving tests",
             error: error.message
         });
@@ -101,29 +144,39 @@ exports.getTestById = async (req, res) => {
             });
         }
 
-        const test = await Test.findById(id);
+        const facultyUser = await User.findById(req.user._id).populate('college').lean();
+        const collegeId = facultyUser.college?._id;
+
+        const test = await Test.findOne({
+            _id: id,
+            collegeId: collegeId
+        });
 
         if (!test) {
             return res.status(404).json({ 
-                message: "Test not found" 
+                message: "Test not found or unauthorized" 
             });
         }
 
         // Fetch full question details
         const questions = await Question.find({
-            _id: { $in: test.questionIds }
+            _id: { $in: test.questionIds },
+            collegeId: collegeId
         }).select('-__v');
 
         res.status(200).json({
+            success: true,
             message: "Test retrieved successfully",
-            test: {
-                ...test.toObject(),
+            data: {
+                test,
                 questions
             }
         });
 
     } catch(error) {
+        console.error('Get test by ID error:', error);
         res.status(500).json({
+            success: false,
             message: "Error retrieving test",
             error: error.message
         });
@@ -166,11 +219,18 @@ exports.rescheduleTest = async (req, res) => {
             });
         }
 
-        const test = await Test.findById(id);
+        const facultyUser = await User.findById(req.user._id).populate('college').lean();
+        const collegeId = facultyUser.college?._id;
+
+        const test = await Test.findOne({
+            _id: id,
+            collegeId: collegeId,
+            facultyId: facultyUser._id
+        });
 
         if (!test) {
             return res.status(404).json({ 
-                message: "Test not found" 
+                message: "Test not found or unauthorized" 
             });
         }
 
@@ -186,42 +246,51 @@ exports.rescheduleTest = async (req, res) => {
         const updatedTest = await test.save();
 
         res.status(200).json({
+            success: true,
             message: "Test rescheduled successfully",
-            test: updatedTest
+            data: updatedTest
         });
 
     } catch(error) {
+        console.error('Reschedule test error:', error);
         res.status(500).json({
+            success: false,
             message: "Error rescheduling test",
             error: error.message
         });
     }
 };
 
-// Get questions for dropdown (filtered by facultyId)
+// Get questions for dropdown (filtered by facultyId and college)
 exports.getQuestionsForDropdown = async (req, res) => {
     try {
-        const { facultyId } = req.query;
-
-        if (!facultyId) {
-            return res.status(400).json({ 
-                message: "facultyId is required" 
+        const facultyUser = await User.findById(req.user._id).populate('college').lean();
+        
+        if (!facultyUser || facultyUser.role !== 'faculty') {
+            return res.status(403).json({ 
+                message: "Unauthorized - Faculty only" 
             });
         }
 
+        const collegeId = facultyUser.college?._id;
+
         const questions = await Question.find({
-            facultyId,
+            collegeId: collegeId,
+            facultyId: facultyUser._id,
             isActive: true
         }).select('_id questionText tags');
 
         res.status(200).json({
+            success: true,
             message: "Questions retrieved successfully",
             count: questions.length,
-            questions
+            data: questions
         });
 
     } catch(error) {
+        console.error('Get questions dropdown error:', error);
         res.status(500).json({
+            success: false,
             message: "Error retrieving questions",
             error: error.message
         });

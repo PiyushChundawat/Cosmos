@@ -2,26 +2,28 @@
 const express = require('express');
 const router = express.Router();
 const questionController = require('../../controllers/faculty/question.controller');
+const { protect } = require('../../middleware/authMiddleware');
 
+// All routes are protected - require authentication
 // Create a new question
-router.post("/", questionController.createQuestion);
+router.post("/", protect, questionController.createQuestion);
 
-// Get all active questions
-router.get("/", questionController.getAllQuestions);
+// Get all active questions (filtered by faculty's college)
+router.get("/", protect, questionController.getAllQuestions);
 
 // Get question by ID
-router.get("//:id", questionController.getQuestionById);
+router.get("/:id", protect, questionController.getQuestionById);
 
 // Get questions by faculty ID
-router.get("/faculty/:facultyId", questionController.getQuestionsByFacultyId);
+router.get("/faculty/:facultyId", protect, questionController.getQuestionsByFacultyId);
 
 // Get questions by subject
-router.get("/subject/:subject", questionController.getQuestionsBySubject);
+router.get("/subject/:subject", protect, questionController.getQuestionsBySubject);
 
 // Get questions by topic
-router.get("/topic/:topic", questionController.getQuestionsByTopic);
+router.get("/topic/:topic", protect, questionController.getQuestionsByTopic);
 
 // Delete a question
-router.delete("/:id", questionController.deleteQuestion);
+router.delete("/:id", protect, questionController.deleteQuestion);
 
 module.exports = router;

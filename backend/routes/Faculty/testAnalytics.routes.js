@@ -1,7 +1,7 @@
 // routes/analytics/testAnalytics.routes.js
 const express = require('express');
 const router = express.Router();
-const testAnalyticsController = require('../../controllers/faculty/testAnalytics.controller');
+const testAnalyticsController = require('../../controllers/analytics/testAnalytics.controller');
 
 // Get test summary for a specific test
 router.get("/test-summary/:testId", testAnalyticsController.getTestSummary);

@@ -1,9 +1,11 @@
+// models/Student/testAttempt.js
 const mongoose = require('mongoose');
 
-const TestAttempts = mongoose.Schema(
+const TestAttemptSchema = new mongoose.Schema(
     {
         testId: {
-            type: mongoose.Schema.typesObjectId,
+            type: mongoose.Schema.Types.ObjectId, // FIXED: was typesObjectId
+            ref: 'Test',
             required: true
         },
         subject: {
@@ -11,11 +13,20 @@ const TestAttempts = mongoose.Schema(
             required: true
         },
         studentId: {
-            type: mongoose.Schema.typesObjectId,
+            type: mongoose.Schema.Types.ObjectId, // FIXED: was typesObjectId
+            ref: 'User',
+            required: true
+        },
+        collegeId: {  // ADD THIS - needed for college isolation
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'College',
             required: true
         },
         answers: [{
-            questionId: mongoose.Schema.ObjectId,
+            questionId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Question'
+            },
             selectedOption: String,
             isCorrect: Boolean
         }],
@@ -34,6 +45,16 @@ const TestAttempts = mongoose.Schema(
         status: {
             type: String,
             required: true
+        },
+        facultyFeedback: String,
+        submittedAt: {
+            type: Date,
+            default: Date.now
         }
+    },
+    {
+        timestamps: true
     }
 );
+
+module.exports = mongoose.model('TestAttempt', TestAttemptSchema);
