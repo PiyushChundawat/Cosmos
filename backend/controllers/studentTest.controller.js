@@ -134,11 +134,17 @@ exports.submitTestAttempt = async (req, res) => {
     let correct = 0;
     const processed = answers.map((ans) => {
       const q = questionMap[ans.questionId];
-      const isCorrect = q && q.correctAnswer === ans.selectedOption;
+      
+      // Convert selectedOption to number for comparison (frontend sends index)
+      const selectedIndex = parseInt(ans.selectedOption);
+      const correctIndex = parseInt(q.correctAnswer);
+      
+      const isCorrect = q && selectedIndex === correctIndex;
       if (isCorrect) correct++;
+      
       return {
         questionId: ans.questionId,
-        selectedOption: ans.selectedOption,
+        selectedOption: selectedIndex,
         isCorrect,
       };
     });

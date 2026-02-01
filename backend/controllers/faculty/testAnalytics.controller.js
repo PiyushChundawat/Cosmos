@@ -289,7 +289,20 @@ exports.getStudentPerformance = async (req, res) => {
             });
         }
 
-        const topPerformers = attempts.slice(0, 5).map(a => ({
+        // Filter out attempts with null studentId (orphaned records)
+        const validAttempts = attempts.filter(a => a.studentId !== null);
+
+        if (validAttempts.length === 0) {
+            return res.status(200).json({
+                message: "No valid student attempts found",
+                data: {
+                    topPerformers: [],
+                    worstPerformers: []
+                }
+            });
+        }
+
+        const topPerformers = validAttempts.slice(0, 5).map(a => ({
             studentId: a.studentId._id,
             studentName: a.studentId.name || 'Unknown',
             rollNumber: a.studentId.rollNumber || 'N/A',
@@ -298,7 +311,7 @@ exports.getStudentPerformance = async (req, res) => {
             totalMarks: a.totalMarks
         }));
 
-        const worstPerformers = attempts.slice(-5).reverse().map(a => ({
+        const worstPerformers = validAttempts.slice(-5).reverse().map(a => ({
             studentId: a.studentId._id,
             studentName: a.studentId.name || 'Unknown',
             rollNumber: a.studentId.rollNumber || 'N/A',

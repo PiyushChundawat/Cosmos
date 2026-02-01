@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["superadmin","collegeadmin", "faculty", "student"],
+      enum: ["superadmin", "collegeadmin", "faculty", "student", "tpo"],
       required: true,
     },
 

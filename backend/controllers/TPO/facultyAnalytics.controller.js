@@ -1,6 +1,6 @@
 // controllers/analytics/facultyAnalytics.controller.js
 const TestAttempt = require("../../models/Student/testAttempt");
-
+const User = require("../../models/user.model");
 const mongoose = require('mongoose');
 
 // Get performance bands by faculty/subject
@@ -12,9 +12,18 @@ exports.getPerformanceBands = async (req, res) => {
             return res.status(400).json({ message: "Subject/Faculty identifier is required" });
         }
 
-        // Aggregate students into performance bands for specific subject
-        const performanceBands = await TestAttempts.aggregate([
-            { $match: { subject: subject } },
+        // Get TPO's college from authenticated user
+        const tpoUser = await User.findById(req.user._id).populate('college');
+        if (!tpoUser || !tpoUser.college) {
+            return res.status(403).json({ message: "TPO college not found" });
+        }
+        
+        const collegeId = new mongoose.Types.ObjectId(tpoUser.college._id);
+        console.log("Fetching faculty analytics for college:", collegeId, "subject:", subject);
+
+        // Aggregate students into performance bands for specific subject and college
+        const performanceBands = await TestAttempt.aggregate([
+            { $match: { subject: subject, collegeId: collegeId } },
             {
                 $group: {
                     _id: "$studentId",
@@ -76,11 +85,14 @@ exports.getPerformanceBands = async (req, res) => {
             }
         });
 
+        console.log("Faculty performance bands response:", response);
+
         res.status(200).json({
             message: "Faculty performance bands retrieved successfully",
             data: response
         });
     } catch (error) {
+        console.error("Error in getPerformanceBands:", error);
         res.status(500).json({ message: "Error retrieving faculty performance bands", error: error.message });
     }
 };
@@ -94,9 +106,18 @@ exports.getCompleteAnalytics = async (req, res) => {
             return res.status(400).json({ message: "Subject/Faculty identifier is required" });
         }
 
+        // Get TPO's college from authenticated user
+        const tpoUser = await User.findById(req.user._id).populate('college');
+        if (!tpoUser || !tpoUser.college) {
+            return res.status(403).json({ message: "TPO college not found" });
+        }
+        
+        const collegeId = new mongoose.Types.ObjectId(tpoUser.college._id);
+        console.log("Fetching complete analytics for college:", collegeId, "subject:", subject);
+
         // Get comprehensive faculty analytics
-        const analytics = await TestAttempts.aggregate([
-            { $match: { subject: subject } },
+        const analytics = await TestAttempt.aggregate([
+            { $match: { subject: subject, collegeId: collegeId } },
             {
                 $facet: {
                     // Overall subject statistics
@@ -129,11 +150,22 @@ exports.getCompleteAnalytics = async (req, res) => {
                                 avgPercentage: { $avg: "$percentage" }
                             }
                         },
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "_id",
+                                foreignField: "_id",
+                                as: "studentInfo"
+                            }
+                        },
+                        { $unwind: { path: "$studentInfo", preserveNullAndEmptyArrays: true } },
                         { $sort: { totalScore: -1 } },
                         { $limit: 5 },
                         {
                             $project: {
                                 studentId: "$_id",
+                                studentName: "$studentInfo.name",
+                                rollNumber: "$studentInfo.rollNumber",
                                 _id: 0,
                                 totalScore: 1,
                                 avgPercentage: { $round: ["$avgPercentage", 2] }
@@ -211,6 +243,7 @@ exports.getCompleteAnalytics = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error("Error in getCompleteAnalytics:", error);
         res.status(500).json({ message: "Error retrieving faculty analytics", error: error.message });
     }
 };
