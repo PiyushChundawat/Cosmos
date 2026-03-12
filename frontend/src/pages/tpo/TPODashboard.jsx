@@ -24,10 +24,10 @@ export default function TPODashboard() {
   const [studentLoading, setStudentLoading] = useState(false);
   const [studentError, setStudentError] = useState(null);
 
-  const [testsByFaculty, setTestsByFaculty] = useState([]);
+  const [facultyAnalytics, setFacultyAnalytics] = useState(null);
   const [facultyLoading, setFacultyLoading] = useState(false);
   const [facultyError, setFacultyError] = useState(null);
-  const [expandedTest, setExpandedTest] = useState(null);
+  const [facultySubject, setFacultySubject] = useState('');
 
   const fetchCollegeCodes = async () => {
     try {
@@ -88,22 +88,29 @@ export default function TPODashboard() {
     }
   };
 
-  const fetchTestsByFaculty = async () => {
+  const fetchFacultyAnalytics = async () => {
     try {
       setFacultyLoading(true);
       setFacultyError(null);
 
-      const response = await api.get(`/tpo/faculty-analytics/tests-by-faculty`);
-      setTestsByFaculty(response.data.data || []);
+      if (!facultySubject.trim()) {
+        setFacultyError('Please enter a subject');
+        setFacultyLoading(false);
+        return;
+      }
+
+      const response = await api.get(`/tpo/faculty-analytics/complete?subject=${encodeURIComponent(facultySubject.trim())}`);
+      setFacultyAnalytics(response.data.data);
     } catch (err) {
-      setFacultyError(err.response?.data?.message || 'Failed to load faculty tests');
+      setFacultyError(err.response?.data?.message || 'Failed to load faculty analytics');
     } finally {
       setFacultyLoading(false);
     }
   };
 
   useEffect(() => {
-    if (activeTab === 'faculty') fetchTestsByFaculty();
+    if (activeTab === 'student') fetchStudentAnalytics();
+    if (activeTab === 'faculty') fetchFacultyAnalytics();
   }, [activeTab]);
 
   const studentPerformanceData = {
@@ -156,7 +163,7 @@ export default function TPODashboard() {
         <main className="max-w-7xl mx-auto px-6 py-8 space-y-6">
           {/* Tabs */}
           <div className="flex gap-6 border-b">
-            {['overview', 'faculty'].map(tab => (
+            {['overview', 'student', 'faculty'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -168,6 +175,8 @@ export default function TPODashboard() {
               >
                 {tab === 'overview'
                   ? 'Overview'
+                  : tab === 'student'
+                  ? 'Student Analytics'
                   : 'Faculty Analytics'}
               </button>
             ))}
@@ -254,11 +263,24 @@ export default function TPODashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card
                   className="cursor-pointer hover:border-[#2563EB]"
+                  onClick={() => setActiveTab('student')}
+                >
+                  <h3 className="text-xl font-semibold mb-2">Student Analytics</h3>
+                  <p className="text-gray-600 mb-4">
+                    Performance distribution & top performers.
+                  </p>
+                  <Button className="w-full bg-[#2563EB] hover:bg-[#1E40AF] text-white">
+                    View Details
+                  </Button>
+                </Card>
+
+                <Card
+                  className="cursor-pointer hover:border-[#2563EB]"
                   onClick={() => setActiveTab('faculty')}
                 >
                   <h3 className="text-xl font-semibold mb-2">Faculty Analytics</h3>
                   <p className="text-gray-600 mb-4">
-                    Tests by faculty and students who took them.
+                    Subject-wise faculty performance insights.
                   </p>
                   <Button className="w-full bg-[#2563EB] hover:bg-[#1E40AF] text-white">
                     View Details
@@ -268,127 +290,117 @@ export default function TPODashboard() {
             </>
           )}
 
+          {/* Student Analytics */}
+          {activeTab === 'student' && (
+            <>
+              <h2 className="text-2xl font-bold text-[#1E40AF]">Student Analytics</h2>
+
+              {studentLoading ? (
+                <div className="text-center py-16">
+                  <div className="animate-spin h-14 w-14 border-b-4 border-[#2563EB] rounded-full mx-auto" />
+                  <p className="mt-4 text-gray-600">Loading student analytics...</p>
+                </div>
+              ) : studentError ? (
+                <div className="text-center bg-red-50 p-8 rounded-xl">
+                  <p className="text-red-600 font-semibold">{studentError}</p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <Chart type="bar" data={studentPerformanceData} options={chartOptions} />
+                    </Card>
+                    <Card>
+                      <Chart type="pie" data={studentPerformanceData} />
+                    </Card>
+                  </div>
+
+                  <Card>
+                    <h3 className="text-xl font-semibold mb-4">Top Performers</h3>
+                    <table className="w-full">
+                      <thead className="bg-[#2563EB] text-white">
+                        <tr>
+                          <th className="px-4 py-2">Rank</th>
+                          <th className="px-4 py-2">Student ID</th>
+                          <th className="px-4 py-2">Score</th>
+                          <th className="px-4 py-2">Avg %</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {topStudents.map((s, i) => (
+                          <tr key={s.studentId} className="hover:bg-blue-50">
+                            <td className="px-4 py-2">{i + 1}</td>
+                            <td className="px-4 py-2">{s.studentId}</td>
+                            <td className="px-4 py-2">{s.totalScore}</td>
+                            <td className="px-4 py-2">{s.avgPercentage}%</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Card>
+                </>
+              )}
+            </>
+          )}
+
           {/* Faculty Analytics */}
           {activeTab === 'faculty' && (
             <>
               <h2 className="text-2xl font-bold text-[#1E40AF]">Faculty Analytics</h2>
 
+              <Card className="mb-4">
+                <div className="flex flex-col md:flex-row gap-4 items-end">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Subject
+                    </label>
+                    <input
+                      type="text"
+                      value={facultySubject}
+                      onChange={(e) => setFacultySubject(e.target.value)}
+                      placeholder="e.g., Mathematics, Physics, DBMS"
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-[#2563EB] transition"
+                    />
+                  </div>
+                  <Button
+                    className="bg-[#2563EB] hover:bg-[#1E40AF] text-white"
+                    onClick={fetchFacultyAnalytics}
+                  >
+                    Apply
+                  </Button>
+                </div>
+              </Card>
+
               {facultyLoading ? (
                 <div className="text-center py-16">
                   <div className="animate-spin h-14 w-14 border-b-4 border-[#2563EB] rounded-full mx-auto" />
-                  <p className="mt-4 text-gray-600">Loading faculty tests...</p>
+                  <p className="mt-4 text-gray-600">Loading faculty analytics...</p>
                 </div>
               ) : facultyError ? (
                 <div className="text-center bg-red-50 p-8 rounded-xl">
                   <p className="text-red-600 font-semibold">{facultyError}</p>
+                  <p className="text-gray-600 text-sm mt-2">Go to Faculty Analytics page to view detailed insights by subject</p>
                 </div>
-              ) : testsByFaculty && testsByFaculty.length > 0 ? (
-                <div className="space-y-4">
-                  {testsByFaculty.map((test) => (
-                    <div 
-                      key={test._id}
-                      className="border-2 border-gray-300 rounded-xl overflow-hidden hover:border-[#2563EB] transition"
-                    >
-                      {/* Test Summary */}
-                      <div
-                        className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 cursor-pointer hover:from-blue-100 hover:to-indigo-100 transition"
-                        onClick={() => setExpandedTest(expandedTest === test._id ? null : test._id)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold text-[#1E40AF] mb-2">{test.testTitle}</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-                              <div>
-                                <p className="text-gray-500">Faculty</p>
-                                <p className="font-semibold text-gray-800">{test.facultyName || 'N/A'}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500">Students</p>
-                                <p className="text-2xl font-bold text-[#2563EB]">{test.studentCount || 0}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500">Attempts</p>
-                                <p className="text-2xl font-bold text-[#2563EB]">{test.totalAttempts || 0}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500">Avg Score</p>
-                                <p className="text-2xl font-bold text-[#059669]">{test.avgScore || 0}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500">Avg %</p>
-                                <p className="text-2xl font-bold text-[#2563EB]">{test.avgPercentage || 0}%</p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            <svg 
-                              className={`w-6 h-6 text-[#2563EB] transition transform ${expandedTest === test._id ? 'rotate-180' : ''}`}
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Student Details */}
-                      {expandedTest === test._id && (
-                        <div className="p-6 bg-white border-t-2 border-gray-300">
-                          <h4 className="text-lg font-semibold text-gray-800 mb-4">
-                            Students who took this test ({test.attempts?.length || 0})
-                          </h4>
-                          {test.attempts && test.attempts.length > 0 ? (
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead className="bg-gray-200">
-                                  <tr>
-                                    <th className="px-4 py-2 text-left">Student Name</th>
-                                    <th className="px-4 py-2 text-left">Roll Number</th>
-                                    <th className="px-4 py-2 text-left">Email</th>
-                                    <th className="px-4 py-2 text-right">Score</th>
-                                    <th className="px-4 py-2 text-right">%</th>
-                                    <th className="px-4 py-2 text-center">Status</th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y">
-                                  {test.attempts.map((attempt, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50">
-                                      <td className="px-4 py-3">{attempt.studentName}</td>
-                                      <td className="px-4 py-3">{attempt.studentRoll}</td>
-                                      <td className="px-4 py-3 text-xs text-gray-600">{attempt.studentEmail}</td>
-                                      <td className="px-4 py-3 text-right font-semibold">{attempt.score}</td>
-                                      <td className="px-4 py-3 text-right font-semibold">{attempt.percentage.toFixed(2)}%</td>
-                                      <td className="px-4 py-3 text-center">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                          attempt.status === 'completed' 
-                                            ? 'bg-green-100 text-green-800' 
-                                            : 'bg-yellow-100 text-yellow-800'
-                                        }`}>
-                                          {attempt.status}
-                                        </span>
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          ) : (
-                            <p className="text-gray-500 text-center py-8">No students have attempted this test yet</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+              ) : facultyAnalytics ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {[
+                      ['Avg Score', facultyAnalytics.overallStats?.avgScore],
+                      ['Avg %', (facultyAnalytics.overallStats?.avgPercentage || 0) + '%'],
+                      ['Students', facultyAnalytics.overallStats?.totalStudents],
+                      ['Attempts', facultyAnalytics.overallStats?.totalAttempts]
+                    ].map(([label, value], i) => (
+                      <Card key={i} className="text-center">
+                        <p className="text-gray-500">{label}</p>
+                        <p className="text-3xl font-bold text-[#2563EB] mt-2">{value}</p>
+                      </Card>
+                    ))}
+                  </div>
+                </>
               ) : (
-                <div className="text-center bg-yellow-50 p-12 rounded-xl">
-                  <svg className="w-16 h-16 text-yellow-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
-                  <p className="text-yellow-800 font-semibold text-lg">No tests created yet</p>
-                  <p className="text-gray-600 text-sm mt-2">Faculty members haven't created any tests for your college</p>
+                <div className="text-center bg-yellow-50 p-8 rounded-xl">
+                  <p className="text-yellow-700 font-semibold">No faculty analytics data available</p>
+                  <p className="text-gray-600 text-sm mt-2">Go to Faculty Analytics page to view detailed insights by subject</p>
                 </div>
               )}
             </>

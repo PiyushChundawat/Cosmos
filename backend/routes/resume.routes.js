@@ -3,7 +3,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { protect } = require("../middleware/authMiddleware"); // your existing auth middleware
+const { protect } = require("../middleware/auth.middleware"); // your existing auth middleware
 const {
   uploadResume,
   getLatestResumeAnalysis,
