@@ -1,135 +1,112 @@
-const pdfParse = require("pdf-parse");  // v1.1.1
+// utils/analyzeResume.js
+// Extracts text from PDF/DOCX and analyzes it using Google Gemini
+
 const fs = require("fs");
-// const { callHFModel } = require("./hfClient"); // not needed for now
+const path = require("path");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// 1) PDF file -> plain text
-async function extractTextFromPdf(filePath) {
-  const buffer = fs.readFileSync(filePath);
-  const data = await pdfParse(buffer);
-  return data.text || "";
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash",
+});
+
+// ---------------------------------------------
+// TEXT EXTRACTION
+// ---------------------------------------------
+const pdfParse = require("pdf-parse");
+
+async function extractTextFromPDF(filePath) {
+  const dataBuffer = fs.readFileSync(filePath);
+  const data = await pdfParse(dataBuffer);
+  return data.text;
 }
 
-// ------------ Simple rule-based analysis using real resume text ------------
-
-// mapping of “skills” to search keywords
-const SKILL_KEYWORDS = [
-  { label: "JavaScript", keywords: ["javascript", "js "] },
-  { label: "TypeScript", keywords: ["typescript", "ts "] },
-  { label: "React", keywords: ["react", "next.js", "nextjs"] },
-  { label: "Node.js", keywords: ["node.js", "nodejs", "node js"] },
-  { label: "Express", keywords: ["express.js", "expressjs", "express js"] },
-  { label: "MongoDB", keywords: ["mongodb", "mongo db"] },
-  { label: "SQL", keywords: ["mysql", "postgres", "sql "] },
-  { label: "HTML/CSS", keywords: ["html", "css"] },
-  { label: "Python", keywords: ["python"] },
-  { label: "Java", keywords: [" java "] },
-  { label: "C++", keywords: ["c++", "cpp"] },
-];
-
-function ruleBasedAnalysis(text) {
-  const lower = text.toLowerCase();
-
-  // ---- skills detection ----
-  const skills = [];
-  for (const entry of SKILL_KEYWORDS) {
-    if (entry.keywords.some((k) => lower.includes(k))) {
-      skills.push(entry.label);
-    }
-  }
-  const uniqueSkills = [...new Set(skills)].slice(0, 10);
-
-  // ---- scoring ----
-  let score = 40;
-
-  // more skills -> higher score
-  score += Math.min(uniqueSkills.length * 5, 30); // +0..30
-
-  // length of resume
-  const len = text.length;
-  if (len > 5000) score += 10;        // quite detailed
-  else if (len > 2500) score += 5;
-  else if (len < 800) score -= 10;    // too short
-
-  // projects / internships presence
-  if (lower.includes("project")) score += 5;
-  if (lower.includes("internship") || lower.includes("intern")) score += 5;
-  if (lower.includes("hackathon") || lower.includes("competition")) score += 3;
-
-  score = Math.max(0, Math.min(100, score)); // clamp 0–100
-
-  // ---- strengths ----
-  const strengths = [];
-  if (uniqueSkills.length >= 4) {
-    strengths.push("Good spread of technical skills relevant to software roles.");
-  }
-  if (lower.includes("project")) {
-    strengths.push("Has hands-on project experience; shows practical application of skills.");
-  }
-  if (lower.includes("internship") || lower.includes("intern")) {
-    strengths.push("Includes internship or industry exposure, which adds credibility.");
-  }
-  if (lower.includes("cgpa") || lower.includes("gpa") || lower.includes("percentage")) {
-    strengths.push("Academic performance is clearly mentioned.");
-  }
-  if (!strengths.length) {
-    strengths.push("Basic structure is present; can be improved with clearer highlights.");
-  }
-
-  // ---- improvements ----
-  const improvements = [];
-  if (!lower.includes("summary") && !lower.includes("objective")) {
-    improvements.push("Add a short 2–3 line profile summary at the top.");
-  }
-  if (!lower.includes("cgpa") && !lower.includes("gpa") && !lower.includes("percentage")) {
-    improvements.push("Mention your CGPA / percentage clearly under Education.");
-  }
-  if (!lower.includes("github") && !lower.includes("git hub")) {
-    improvements.push("Add your GitHub or portfolio link to showcase projects.");
-  }
-  if (!lower.includes("skills")) {
-    improvements.push("Create a dedicated Skills section with tools, languages and frameworks.");
-  }
-  if (!lower.includes("internship") && !lower.includes("experience")) {
-    improvements.push("If possible, include internships or relevant experience (even part-time / freelance).");
-  }
-  if (!improvements.length) {
-    improvements.push("Polish formatting and add more measurable, quantified achievements.");
-  }
-
-  // ---- summary ----
-  const summary = `This resume shows ${
-    uniqueSkills.length ? "a decent mix of technical skills" : "basic information"
-  } and has scope to improve by adding clearer achievements, structure and more project or internship details.`;
-
-  return {
-    score,
-    skills: uniqueSkills,
-    strengths,
-    improvements,
-    summary,
-  };
+async function extractTextFromDOCX(filePath) {
+  const mammoth = require("mammoth");
+  const result = await mammoth.extractRawText({ path: filePath });
+  return result.value;
 }
 
-// 3) MAIN: file path -> structured analysis
+async function extractTextFromFile(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+
+  if (ext === ".pdf") {
+    return await extractTextFromPDF(filePath);
+  }
+
+  if (ext === ".docx" || ext === ".doc") {
+    return await extractTextFromDOCX(filePath);
+  }
+
+  throw new Error("Unsupported file type");
+}
+
+// ---------------------------------------------
+// RESUME ANALYSIS WITH GEMINI
+// ---------------------------------------------
+
+async function analyzeResumeText(resumeText) {
+
+  const prompt = `
+You are an expert resume reviewer.
+
+Analyze this resume and return ONLY valid JSON.
+
+Resume:
+${resumeText}
+
+Return JSON in this exact structure:
+
+{
+"score": 0-100,
+"summary": "short summary",
+"skills": ["skill1","skill2"],
+"strengths": ["strength1","strength2"],
+"improvements": ["improvement1","improvement2"],
+"atsKeywords": ["keyword1","keyword2"],
+"sectionFeedback":{
+"contact":"feedback",
+"summary":"feedback",
+"experience":"feedback",
+"education":"feedback",
+"skills":"feedback",
+"projects":"feedback"
+}
+}
+`;
+
+  const result = await model.generateContent(prompt);
+
+  const text = result.response.text();
+
+  // Clean Gemini output
+  const cleaned = text.replace(/```json|```/g, "").trim();
+
+  try {
+    return JSON.parse(cleaned);
+  } catch (err) {
+    console.error("Gemini JSON parse error:", cleaned);
+
+    throw new Error("AI returned invalid JSON");
+  }
+}
+
+// ---------------------------------------------
+// MAIN FUNCTION
+// ---------------------------------------------
+
 async function analyzeResumeFromFile(filePath) {
-  const text = await extractTextFromPdf(filePath);
 
-  if (!text || text.trim().length < 50) {
-    return {
-      score: 30,
-      skills: [],
-      strengths: ["Resume text is too short or unreadable."],
-      improvements: [
-        "Export your resume as a proper text-based PDF (not just an image).",
-        "Add clear sections for Education, Skills, Projects, and Experience.",
-      ],
-      summary:
-        "The resume could not be fully analysed because the extracted text was very limited.",
-    };
+  const resumeText = await extractTextFromFile(filePath);
+
+  if (!resumeText || resumeText.length < 50) {
+    throw new Error("Could not extract text from resume");
   }
 
-  // For now: purely rule-based (no HF)
-  return ruleBasedAnalysis(text);
+  const analysis = await analyzeResumeText(resumeText);
+
+  return analysis;
 }
 
 module.exports = { analyzeResumeFromFile };

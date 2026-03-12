@@ -1,12 +1,16 @@
-
+// controllers/resume.controller.js
 const ResumeAnalysis = require("../models/resumeAnalysis.model");
-const Student = require("../models/student.model");
+const User = require("../models/user.model");
 const { analyzeResumeFromFile } = require("../utils/analyzeResume");
 
+// ---------------------------------------------
 // POST /api/resume/upload
+// Multer middleware must run before this (adds req.file)
+// ---------------------------------------------
 const uploadResume = async (req, res) => {
   try {
-    const studentId = req.body.studentId;
+    // studentId comes from auth middleware (req.user) or body fallback
+    const studentId = req.user?._id || req.body.studentId;
 
     if (!studentId) {
       return res.status(400).json({ message: "studentId is required" });
@@ -17,10 +21,11 @@ const uploadResume = async (req, res) => {
 
     const fileUrl = `/uploads/resumes/${req.file.filename}`;
 
-    // LLM-based analysis via HuggingFace
-    const { score, skills, strengths, improvements, summary } =
+    // Analyze resume with Claude
+    const { score, summary, skills, strengths, improvements, atsKeywords, sectionFeedback } =
       await analyzeResumeFromFile(req.file.path);
 
+    // Save analysis to DB
     const analysis = await ResumeAnalysis.create({
       studentId,
       fileUrl,
@@ -29,49 +34,67 @@ const uploadResume = async (req, res) => {
       skills,
       strengths,
       improvements,
+      atsKeywords: atsKeywords || [],
+      sectionFeedback: sectionFeedback || {},
     });
 
-    await Student.findByIdAndUpdate(studentId, {
+    // Update student's placement readiness score on User model
+    await User.findByIdAndUpdate(studentId, {
       placementReadinessScore: score,
     });
 
     res.status(201).json({
-      message: "Resume uploaded and analyzed with LLM (HuggingFace)",
+      message: "Resume uploaded and analyzed successfully",
       analysis,
     });
   } catch (err) {
     console.error("Resume upload error:", err);
-    res
-      .status(500)
-      .json({ message: "Error uploading resume", error: err.message });
+    res.status(500).json({ message: "Error uploading resume", error: err.message });
   }
 };
 
+// ---------------------------------------------
 // GET /api/resume/latest/:studentId
+// ---------------------------------------------
 const getLatestResumeAnalysis = async (req, res) => {
   try {
-    const studentId = req.params.studentId;
+    const studentId = req.params.studentId || req.user?._id;
 
     const analysis = await ResumeAnalysis.findOne({ studentId })
       .sort({ analyzedAt: -1 })
       .lean();
 
     if (!analysis) {
-      return res
-        .status(404)
-        .json({ message: "No resume analysis found for this student" });
+      return res.status(404).json({ message: "No resume analysis found for this student" });
     }
 
     res.json(analysis);
   } catch (err) {
     console.error("Get resume error:", err);
-    res
-      .status(500)
-      .json({ message: "Error fetching resume analysis", error: err.message });
+    res.status(500).json({ message: "Error fetching resume analysis", error: err.message });
+  }
+};
+
+// ---------------------------------------------
+// GET /api/resume/history/:studentId  (all past analyses)
+// ---------------------------------------------
+const getResumeHistory = async (req, res) => {
+  try {
+    const studentId = req.params.studentId || req.user?._id;
+
+    const analyses = await ResumeAnalysis.find({ studentId })
+      .sort({ analyzedAt: -1 })
+      .lean();
+
+    res.json(analyses);
+  } catch (err) {
+    console.error("Get resume history error:", err);
+    res.status(500).json({ message: "Error fetching resume history", error: err.message });
   }
 };
 
 module.exports = {
   uploadResume,
   getLatestResumeAnalysis,
+  getResumeHistory,
 };
