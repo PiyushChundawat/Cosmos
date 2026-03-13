@@ -315,12 +315,7 @@ http://localhost:5173
 
 ---
 
-# 🔐 Default Admin Login
 
-
-Email: superadmin@cosmos.com
-
-Password: superadmin123
 
 
 ---
