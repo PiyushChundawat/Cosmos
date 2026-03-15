@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://cosmos-7k46.onrender.com/',
+  baseURL: 'https://cosmos-7k46.onrender.com',
 });
 
 // Add token to every request
