@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/SideBar';
 import Card from '../components/Card';
 import Chart from '../components/Chart';
 import Input from '../components/Input';
