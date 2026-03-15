@@ -12,7 +12,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
@@ -57,7 +57,7 @@ const facultyTestRoutes = require("./routes/Faculty/testRoutes");
 
 // ------------- BASE TEST ROUTE -------------
 app.get("/", (req, res) => {
-  res.send("Cosmos backend running 🚀");
+  res.send("Ok");
 });
 
 // ------------- USE ROUTES -------------
@@ -71,7 +71,7 @@ if (typeof adminRoutes === "function") {
   app.use("/api/admin", adminRoutes);
 } else if (adminRoutes) {
   console.warn(
-    "⚠️ /api/admin not mounted: admin.routes.js must export an Express router (module.exports = router)"
+    " /api/admin not mounted: admin.routes.js must export an Express router (module.exports = router)"
   );
 }
 
@@ -102,7 +102,7 @@ const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
-  console.error("❌ MONGO_URI is not defined in .env");
+  console.error(" MONGO_URI is not defined in .env");
   process.exit(1);
 }
 
